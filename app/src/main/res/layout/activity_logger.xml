@@ -1,0 +1,329 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/ScrollView01"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:scrollbars="none" >
+
+    <LinearLayout android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+            android:paddingRight="@dimen/activity_horizontal_margin"
+            android:paddingTop="@dimen/activity_vertical_margin"
+            android:paddingBottom="@dimen/activity_vertical_margin"
+            tools:context="cjmaier2_dkturne2.sensingapp.Logger" >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="Data Logger"
+                android:id="@+id/acceltesttitle"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true" />
+
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal"
+                android:ems="10"
+                android:id="@+id/axisxaccel"
+                android:focusable="false"
+                android:layout_below="@+id/acceltesttitle"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_alignRight="@+id/acceltesttitle"
+                android:layout_alignEnd="@+id/acceltesttitle" />
+
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal"
+                android:ems="10"
+                android:id="@+id/axisyaccel"
+                android:layout_below="@+id/axisxaccel"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:focusable="false"
+                android:layout_alignRight="@+id/axisxaccel" />
+
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal"
+                android:ems="10"
+                android:id="@+id/axiszaccel"
+                android:layout_below="@+id/axisyaccel"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:focusable="false"
+                android:layout_alignRight="@+id/axisyaccel" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="ACCELX"
+                android:id="@+id/accelxlabel"
+                android:layout_alignBottom="@+id/axisxaccel"
+                android:layout_toRightOf="@+id/axisxaccel"
+                android:layout_toEndOf="@+id/axisxaccel" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="ACCELY"
+                android:id="@+id/accelylabel"
+                android:layout_alignBottom="@+id/axisyaccel"
+                android:layout_toRightOf="@+id/axisyaccel"
+                android:layout_toEndOf="@+id/axisyaccel" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="ACCELZ"
+                android:id="@+id/accelzlabel"
+                android:layout_alignBottom="@+id/axiszaccel"
+                android:layout_toRightOf="@+id/axiszaccel"
+                android:layout_toEndOf="@+id/axiszaccel" />
+
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal"
+                android:ems="10"
+                android:id="@+id/axisxgyro"
+                android:focusable="false"
+                android:layout_below="@+id/axiszaccel"
+                android:layout_alignLeft="@+id/axiszaccel"
+                android:layout_alignRight="@+id/axiszaccel" />
+
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal"
+                android:ems="10"
+                android:id="@+id/axisygyro"
+                android:focusable="false"
+                android:layout_below="@+id/axisxgyro"
+                android:layout_alignLeft="@+id/axisxgyro"
+                android:layout_alignRight="@+id/axisxgyro" />
+
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal"
+                android:ems="10"
+                android:id="@+id/axiszgyro"
+                android:focusable="false"
+                android:layout_below="@+id/axisygyro"
+                android:layout_alignLeft="@+id/axisygyro"
+                android:layout_alignRight="@+id/axisygyro" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="GYROX"
+                android:id="@+id/gyroxlabel"
+                android:layout_toEndOf="@+id/axisxgyro"
+                android:layout_toRightOf="@id/axisxgyro"
+                android:layout_alignBottom="@+id/axisxgyro" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="GYROY"
+                android:id="@+id/gyroylabel"
+                android:layout_toEndOf="@+id/axisygyro"
+                android:layout_toRightOf="@id/axisygyro"
+                android:layout_alignBottom="@+id/axisygyro" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="GYROZ"
+                android:id="@+id/gyrozlabel"
+                android:layout_toEndOf="@+id/axiszgyro"
+                android:layout_toRightOf="@id/axiszgyro"
+                android:layout_alignBottom="@+id/axiszgyro" />
+
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal"
+                android:ems="10"
+                android:id="@+id/axiszmag"
+                android:focusable="false"
+                android:layout_below="@+id/axisymag"
+                android:layout_alignLeft="@+id/axisymag"
+                android:layout_alignRight="@+id/axisymag" />
+
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal"
+                android:ems="10"
+                android:id="@+id/axisxmag"
+                android:focusable="false"
+                android:layout_below="@+id/axiszgyro"
+                android:layout_alignLeft="@+id/axiszgyro"
+                android:layout_alignRight="@+id/axiszgyro" />
+
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal"
+                android:ems="10"
+                android:id="@+id/axisymag"
+                android:focusable="false"
+                android:layout_below="@+id/axisxmag"
+                android:layout_alignParentLeft="true"
+                android:layout_alignRight="@+id/axisxmag" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="MAGY"
+                android:id="@+id/magylabel"
+                android:layout_above="@+id/axiszmag"
+                android:layout_toRightOf="@+id/axisymag" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="MAGZ"
+                android:id="@+id/magzlabel"
+                android:layout_alignBottom="@+id/axiszmag"
+                android:layout_toRightOf="@+id/axiszmag" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="MAGX"
+                android:id="@+id/magxlabel"
+                android:layout_above="@+id/axisymag"
+                android:layout_toRightOf="@+id/axisxmag" />
+
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal"
+                android:ems="10"
+                android:id="@+id/alight"
+                android:focusable="false"
+                android:layout_below="@+id/axiszmag"
+                android:layout_alignLeft="@+id/axiszmag"
+                android:layout_alignRight="@+id/axiszmag" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="LIGHT"
+                android:id="@+id/alightlabel"
+                android:layout_alignBottom="@+id/alight"
+                android:layout_toRightOf="@+id/axiszmag" />
+
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="textMultiLine"
+                android:ems="10"
+                android:id="@+id/time"
+                android:focusable="false"
+                android:layout_below="@+id/miclabel"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_toLeftOf="@+id/timelabel"
+                android:layout_toStartOf="@+id/timelabel" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="TIME ELAPSED (ms)"
+                android:id="@+id/timelabel"
+                android:layout_above="@+id/recbutton"
+                android:layout_toRightOf="@+id/mic"
+                android:layout_toEndOf="@+id/mic" />
+
+            <ToggleButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Record"
+                android:textOn="Stop"
+                android:textOff="Record"
+                android:id="@+id/recbutton"
+                android:onClick="toggleRecord"
+                android:layout_below="@+id/time"
+                android:layout_centerHorizontal="true" />
+
+            <!--view for testing (printing values)-->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/recbutton"
+                android:id="@+id/testText" />
+
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal"
+                android:ems="10"
+                android:id="@+id/wifi"
+                android:focusable="false"
+                android:layout_below="@+id/alight"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_alignRight="@+id/alight"
+                android:layout_alignEnd="@+id/alight" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="WIFI"
+                android:id="@+id/wifilabel"
+                android:layout_alignBottom="@+id/wifi"
+                android:layout_alignLeft="@+id/alightlabel"
+                android:layout_alignStart="@+id/alightlabel" />
+
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal"
+                android:ems="10"
+                android:id="@+id/mic"
+                android:focusable="false"
+                android:layout_below="@+id/wifi"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_alignRight="@+id/wifi"
+                android:layout_alignEnd="@+id/wifi" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="MIC"
+                android:id="@+id/miclabel"
+                android:layout_alignBottom="@+id/mic"
+                android:layout_toRightOf="@+id/mic"
+                android:layout_toEndOf="@+id/mic" />
+
+        </RelativeLayout>
+    </LinearLayout>
+</ScrollView>

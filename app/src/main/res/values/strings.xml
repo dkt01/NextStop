@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Trajectory App</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_gyro_test">GyroTest</string>
+    <string name="title_activity_accel_test">AccelTest</string>
+    <string name="title_activity_mag_test">MagTest</string>
+    <string name="title_activity_light_test">LightTest</string>
+    <string name="title_activity_wifi_test">WiFiTest</string>
+    <string name="title_activity_logger">Logger</string>
+    <string name="title_activity_dropbox_setup">DropboxSetup</string>
+    <string name="title_activity_step_count">StepCount</string>
+    <string name="title_activity_mic_test">MicTest</string>
+</resources>
