@@ -1,19 +1,15 @@
 package cjmaier2_dkturne2.nextstop;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.media.MediaRecorder;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.ActionBarActivity;
@@ -47,7 +43,6 @@ public class Logger extends ActionBarActivity implements SensorEventListener{
     private boolean ACCEL_ENABLED = false;
     private boolean GYRO_ENABLED = false;
     private boolean MAG_ENABLED = false;
-    private boolean LIGHT_ENABLED = false;
 
     private boolean DB_ENABLED = false;
     private SharedPreferences dbSettings;
@@ -60,11 +55,6 @@ public class Logger extends ActionBarActivity implements SensorEventListener{
     private Sensor mAccel;
     private Sensor mGyro;
     private Sensor mMag;
-    private Sensor mLight;
-
-    private MediaRecorder mic;
-    private WifiManager wifi;
-    private BroadcastReceiver receiver;
 
     private double start_time; //reference for time_elapsed
     private boolean time_elapsed_started = false; //to determine starting timestamp
@@ -83,9 +73,6 @@ public class Logger extends ActionBarActivity implements SensorEventListener{
     private float m_x = 0;
     private float m_y = 0;
     private float m_z = 0;
-    private float light = 0;
-    private int rssi = 0;
-    private double micv = 0;
     File textFile = null;
 
     private File rootdir;
@@ -102,7 +89,6 @@ public class Logger extends ActionBarActivity implements SensorEventListener{
         ACCEL_ENABLED = manager.hasSystemFeature(PackageManager.FEATURE_SENSOR_ACCELEROMETER);
         GYRO_ENABLED = manager.hasSystemFeature(PackageManager.FEATURE_SENSOR_GYROSCOPE);
         MAG_ENABLED = manager.hasSystemFeature(PackageManager.FEATURE_SENSOR_COMPASS);
-        LIGHT_ENABLED = manager.hasSystemFeature(PackageManager.FEATURE_SENSOR_LIGHT);
 
         if(!ACCEL_ENABLED)
         {
@@ -142,33 +128,6 @@ public class Logger extends ActionBarActivity implements SensorEventListener{
         else
         {
             mMag = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-        }
-        if(!LIGHT_ENABLED)
-        {
-            findViewById(R.id.alightlabel).setVisibility(View.INVISIBLE);
-            findViewById(R.id.alight).setVisibility(View.INVISIBLE);
-        }
-        else
-        {
-            mLight = mSensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
-        }
-
-        wifi = (WifiManager)getSystemService(Context.WIFI_SERVICE);
-        if(!wifi.isWifiEnabled()){
-            if(wifi.getWifiState() != WifiManager.WIFI_STATE_ENABLING){
-                wifi.setWifiEnabled(true);
-            }
-        }
-
-        mic = new MediaRecorder();
-        mic.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mic.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-        mic.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-        mic.setOutputFile("/dev/null");
-        try {
-            mic.prepare();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
 
         dbSettings = getSharedPreferences("DBSETTINGS",MODE_PRIVATE);
@@ -216,26 +175,6 @@ public class Logger extends ActionBarActivity implements SensorEventListener{
                     mMag,
                     UPDATE_RATE);
         }
-        if(LIGHT_ENABLED)
-        {
-            mSensorManager.registerListener(this,
-                    mLight,
-                    UPDATE_RATE);
-        }
-
-        wifi.startScan();
-        receiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                wifi.startScan();
-                rssi = wifi.getConnectionInfo().getRssi();
-                EditText wifival = (EditText)findViewById(R.id.wifi);
-                wifival.setText(Float.toString(rssi));
-            }
-        };
-        registerReceiver(receiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
-
-        mic.start();
     }
 
     @Override
@@ -243,8 +182,6 @@ public class Logger extends ActionBarActivity implements SensorEventListener{
         // unregister listener
         super.onPause();
         mSensorManager.unregisterListener(this);
-        unregisterReceiver(receiver);
-        mic.stop();
     }
 
 
@@ -305,13 +242,6 @@ public class Logger extends ActionBarActivity implements SensorEventListener{
                 return;
             }
         }
-        if(LIGHT_ENABLED)
-        {
-            if(event.sensor.getType() == Sensor.TYPE_LIGHT)
-            {
-                getAmbientLight(event);
-            }
-        }
     }
 
     @Override
@@ -337,7 +267,7 @@ public class Logger extends ActionBarActivity implements SensorEventListener{
             else
             {
                 File externalDir = Environment.getExternalStorageDirectory();
-                rootdir = new File(externalDir.getAbsolutePath() + "/Trajectory-App-Tests");
+                rootdir = new File(externalDir.getAbsolutePath() + "/NextStop-Tests");
                 if(!rootdir.exists())
                 {
                     try{
@@ -365,11 +295,11 @@ public class Logger extends ActionBarActivity implements SensorEventListener{
                 if(!writer_created)
                 {
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HHmmss", Locale.US);
-                    wfilename = "cjmaier2_dkturne2_"+sdf.format(new Date())+"_PA2.csv";
+                    wfilename = "cjmaier2_dkturne2_"+sdf.format(new Date())+".csv";
                     textFile = new File(dir, wfilename);
                     try {
                         writer = new BufferedWriter(new FileWriter(textFile));
-                        csv_text.append("Timestamp (ms),Accel_x,Accel_y,Accel_z,Gyro_x,Gyro_y,Gyro_z,Mag_x,Mag_y,Mag_z,Light intensity,WiFi,Sound\n");
+                        csv_text.append("Timestamp (ms),Accel_x,Accel_y,Accel_z,Gyro_x,Gyro_y,Gyro_z,Mag_x,Mag_y,Mag_z\n");
                         writer_created = true;
                     } catch (IOException ex) {
                         testText.setText("Something went wrong!" + ex.getMessage());
@@ -421,15 +351,10 @@ public class Logger extends ActionBarActivity implements SensorEventListener{
         yval.setText(Float.toString(a_y));
         zval.setText(Float.toString(a_z));
 
-        micv = mic.getMaxAmplitude();
-        EditText micval = (EditText)findViewById(R.id.mic);
-        micval.setText(Double.toString(micv));
-
         if(writer_created) {
             String newentry = String.valueOf(time_elapsed) + "," + Float.toString(a_x) + "," + Float.toString(a_y) + "," + Float.toString(a_z) + ","
                     + Float.toString(g_x) + "," + Float.toString(g_y) + "," + Float.toString(g_z) + ","
-                    + Float.toString(m_x) + "," + Float.toString(m_y) + "," + Float.toString(m_z) + "," + Float.toString(light) + ","
-                    + Integer.toString(rssi) + "," + Double.toString(micv) + "\n";
+                    + Float.toString(m_x) + "," + Float.toString(m_y) + "," + Float.toString(m_z) + "\n";
             csv_text.append(newentry);
             try {
                 writer.write(csv_text.toString());
@@ -471,13 +396,5 @@ public class Logger extends ActionBarActivity implements SensorEventListener{
         xval.setText(Float.toString(m_x));
         yval.setText(Float.toString(m_y));
         zval.setText(Float.toString(m_z));
-    }
-
-    private void getAmbientLight(SensorEvent event)
-    {
-        light = event.values[0];
-        EditText lval = (EditText)findViewById(R.id.alight);
-
-        lval.setText(Float.toString(light));
     }
 }

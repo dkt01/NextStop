@@ -220,31 +220,11 @@
             <EditText
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:inputType="numberDecimal"
-                android:ems="10"
-                android:id="@+id/alight"
-                android:focusable="false"
-                android:layout_below="@+id/axiszmag"
-                android:layout_alignLeft="@+id/axiszmag"
-                android:layout_alignRight="@+id/axiszmag" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="LIGHT"
-                android:id="@+id/alightlabel"
-                android:layout_alignBottom="@+id/alight"
-                android:layout_toRightOf="@+id/axiszmag" />
-
-            <EditText
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
                 android:inputType="textMultiLine"
                 android:ems="10"
                 android:id="@+id/time"
                 android:focusable="false"
-                android:layout_below="@+id/miclabel"
+                android:layout_below="@+id/magzlabel"
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentStart="true"
                 android:layout_toLeftOf="@+id/timelabel"
@@ -257,8 +237,8 @@
                 android:text="TIME ELAPSED (ms)"
                 android:id="@+id/timelabel"
                 android:layout_above="@+id/recbutton"
-                android:layout_toRightOf="@+id/mic"
-                android:layout_toEndOf="@+id/mic" />
+                android:layout_toRightOf="@+id/axiszmag"
+                android:layout_toEndOf="@+id/axiszmag" />
 
             <ToggleButton
                 android:layout_width="wrap_content"
@@ -277,52 +257,6 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/recbutton"
                 android:id="@+id/testText" />
-
-            <EditText
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:inputType="numberDecimal"
-                android:ems="10"
-                android:id="@+id/wifi"
-                android:focusable="false"
-                android:layout_below="@+id/alight"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true"
-                android:layout_alignRight="@+id/alight"
-                android:layout_alignEnd="@+id/alight" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="WIFI"
-                android:id="@+id/wifilabel"
-                android:layout_alignBottom="@+id/wifi"
-                android:layout_alignLeft="@+id/alightlabel"
-                android:layout_alignStart="@+id/alightlabel" />
-
-            <EditText
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:inputType="numberDecimal"
-                android:ems="10"
-                android:id="@+id/mic"
-                android:focusable="false"
-                android:layout_below="@+id/wifi"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true"
-                android:layout_alignRight="@+id/wifi"
-                android:layout_alignEnd="@+id/wifi" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="MIC"
-                android:id="@+id/miclabel"
-                android:layout_alignBottom="@+id/mic"
-                android:layout_toRightOf="@+id/mic"
-                android:layout_toEndOf="@+id/mic" />
 
         </RelativeLayout>
     </LinearLayout>

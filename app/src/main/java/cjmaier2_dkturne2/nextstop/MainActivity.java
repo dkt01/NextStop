@@ -20,7 +20,6 @@ public class MainActivity extends ActionBarActivity {
         Button accelButton = (Button)findViewById(R.id.atbutton);
         Button gyroButton = (Button)findViewById(R.id.gtbutton);
         Button magButton = (Button)findViewById(R.id.mtbutton);
-        Button alButton = (Button)findViewById(R.id.ltbutton);
         if(!manager.hasSystemFeature(PackageManager.FEATURE_SENSOR_ACCELEROMETER))
         {
             accelButton.setEnabled(false);
@@ -35,11 +34,6 @@ public class MainActivity extends ActionBarActivity {
         {
             magButton.setEnabled(false);
             magButton.setTextColor(0x66FFFFFF);
-        }
-        if(!manager.hasSystemFeature(PackageManager.FEATURE_SENSOR_LIGHT))
-        {
-            alButton.setEnabled(false);
-            alButton.setTextColor(0x66FFFFFF);
         }
     }
 
@@ -84,12 +78,6 @@ public class MainActivity extends ActionBarActivity {
         startActivity(intent);
     }
 
-    public void launchLightTest(View view)
-    {
-        Intent intent = new Intent(this, LightTest.class);
-        startActivity(intent);
-    }
-
     public void launchLogger(View view)
     {
         Intent intent = new Intent(this, Logger.class);
@@ -99,24 +87,6 @@ public class MainActivity extends ActionBarActivity {
     public void launchDropboxSetup(View view)
     {
         Intent intent = new Intent(this, DropboxSetup.class);
-        startActivity(intent);
-    }
-
-    public void launchStepCount(View view)
-    {
-        Intent intent = new Intent(this, StepCount.class);
-        startActivity(intent);
-    }
-
-    public void launchWiFiTest(View view)
-    {
-        Intent intent = new Intent(this, WiFiTest.class);
-        startActivity(intent);
-    }
-
-    public void launchMicTest(View view)
-    {
-        Intent intent = new Intent(this, MicTest.class);
         startActivity(intent);
     }
 }

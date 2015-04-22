@@ -19,7 +19,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="ECE 498 MP2"
+            android:text="ECE 498 NextStop"
             android:id="@+id/maintitle"
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true" />
@@ -43,25 +43,13 @@
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Trajectory"
-                android:textSize="20sp"
-                android:textColor="#FFFFFF"
-                android:background="@drawable/buttonshape0"
-                android:id="@+id/scbutton"
-                android:onClick="launchStepCount"
-                android:layout_marginTop="50dp"
-                android:layout_marginBottom="25dp"
-                android:layout_gravity="center_horizontal" />
-
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
                 android:text="Gyro Test"
                 android:textSize="20sp"
                 android:textColor="#FFFFFF"
                 android:background="@drawable/buttonshape"
                 android:id="@+id/gtbutton"
                 android:onClick="launchGyroTest"
+                android:layout_marginTop="50dp"
                 android:layout_marginBottom="5dp" />
 
             <Button
@@ -85,41 +73,6 @@
                 android:id="@+id/mtbutton"
                 android:onClick="launchMagTest"
                 android:layout_marginBottom="5dp" />
-
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Light Test"
-                android:textSize="20sp"
-                android:textColor="#FFFFFF"
-                android:background="@drawable/buttonshape"
-                android:id="@+id/ltbutton"
-                android:onClick="launchLightTest"
-                android:layout_marginBottom="5dp" />
-
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="WiFi Test"
-                android:textSize="20sp"
-                android:textColor="#FFFFFF"
-                android:background="@drawable/buttonshape"
-                android:id="@+id/wtbutton"
-                android:onClick="launchWiFiTest"
-                android:layout_marginBottom="5dp"
-                android:layout_gravity="center_horizontal" />
-
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Mic Test"
-                android:textSize="20sp"
-                android:textColor="#FFFFFF"
-                android:background="@drawable/buttonshape"
-                android:id="@+id/mictbutton"
-                android:onClick="launchMicTest"
-                android:layout_marginBottom="5dp"
-                android:layout_gravity="center_horizontal" />
 
             <Button
                 android:layout_width="wrap_content"
