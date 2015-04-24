@@ -173,6 +173,28 @@
                 android:layout_height="wrap_content"
                 android:inputType="numberDecimal"
                 android:ems="10"
+                android:id="@+id/latitude"
+                android:focusable="false"
+                android:layout_below="@+id/axiszmag"
+                android:layout_alignLeft="@+id/axiszmag"
+                android:layout_alignRight="@+id/axiszmag" />
+
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal"
+                android:ems="10"
+                android:id="@+id/longitude"
+                android:focusable="false"
+                android:layout_below="@+id/latitude"
+                android:layout_alignLeft="@+id/latitude"
+                android:layout_alignRight="@+id/latitude" />
+
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal"
+                android:ems="10"
                 android:id="@+id/axisxmag"
                 android:focusable="false"
                 android:layout_below="@+id/axiszgyro"
@@ -212,6 +234,24 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="LATITUDE"
+                android:id="@+id/latlabel"
+                android:layout_alignBottom="@+id/latitude"
+                android:layout_toRightOf="@+id/latitude" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="LONGITUDE"
+                android:id="@+id/lonlabel"
+                android:layout_alignBottom="@+id/longitude"
+                android:layout_toRightOf="@+id/longitude" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
                 android:text="MAGX"
                 android:id="@+id/magxlabel"
                 android:layout_above="@+id/axisymag"
@@ -224,11 +264,9 @@
                 android:ems="10"
                 android:id="@+id/time"
                 android:focusable="false"
-                android:layout_below="@+id/magzlabel"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true"
-                android:layout_toLeftOf="@+id/timelabel"
-                android:layout_toStartOf="@+id/timelabel" />
+                android:layout_below="@+id/longitude"
+                android:layout_alignLeft="@+id/longitude"
+                android:layout_alignRight="@+id/longitude" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -237,8 +275,8 @@
                 android:text="TIME ELAPSED (ms)"
                 android:id="@+id/timelabel"
                 android:layout_above="@+id/recbutton"
-                android:layout_toRightOf="@+id/axiszmag"
-                android:layout_toEndOf="@+id/axiszmag" />
+                android:layout_toRightOf="@+id/longitude"
+                android:layout_toEndOf="@+id/longitude" />
 
             <ToggleButton
                 android:layout_width="wrap_content"

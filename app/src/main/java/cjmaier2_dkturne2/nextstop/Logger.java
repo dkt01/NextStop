@@ -8,6 +8,10 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
@@ -36,13 +40,14 @@ import java.util.Locale;
 //below for CSV
 
 
-public class Logger extends ActionBarActivity implements SensorEventListener{
+public class Logger extends ActionBarActivity implements SensorEventListener, LocationListener {
 
     private final int UPDATE_RATE = SensorManager.SENSOR_DELAY_NORMAL;
 
     private boolean ACCEL_ENABLED = false;
     private boolean GYRO_ENABLED = false;
     private boolean MAG_ENABLED = false;
+    private boolean LOC_ENABLED = false;
 
     private boolean DB_ENABLED = false;
     private SharedPreferences dbSettings;
@@ -52,6 +57,8 @@ public class Logger extends ActionBarActivity implements SensorEventListener{
 
 
     private SensorManager mSensorManager;
+    private LocationManager lManager;
+    private String lProvider;
     private Sensor mAccel;
     private Sensor mGyro;
     private Sensor mMag;
@@ -73,6 +80,9 @@ public class Logger extends ActionBarActivity implements SensorEventListener{
     private float m_x = 0;
     private float m_y = 0;
     private float m_z = 0;
+    private double lat = 0;
+    private double lon = 0;
+
     File textFile = null;
 
     private File rootdir;
@@ -85,10 +95,13 @@ public class Logger extends ActionBarActivity implements SensorEventListener{
         setContentView(R.layout.activity_logger);
         TextView testText = (TextView)findViewById(R.id.testText);
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        lManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         PackageManager manager = getPackageManager();
         ACCEL_ENABLED = manager.hasSystemFeature(PackageManager.FEATURE_SENSOR_ACCELEROMETER);
         GYRO_ENABLED = manager.hasSystemFeature(PackageManager.FEATURE_SENSOR_GYROSCOPE);
         MAG_ENABLED = manager.hasSystemFeature(PackageManager.FEATURE_SENSOR_COMPASS);
+        LOC_ENABLED = lManager.isProviderEnabled(lManager.GPS_PROVIDER) |
+                      lManager.isProviderEnabled(lManager.NETWORK_PROVIDER);
 
         if(!ACCEL_ENABLED)
         {
@@ -128,6 +141,17 @@ public class Logger extends ActionBarActivity implements SensorEventListener{
         else
         {
             mMag = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+        }
+        if(!LOC_ENABLED)
+        {
+            findViewById(R.id.latitude).setVisibility(View.INVISIBLE);
+            findViewById(R.id.longitude).setVisibility(View.INVISIBLE);
+            findViewById(R.id.latlabel).setVisibility(View.INVISIBLE);
+            findViewById(R.id.lonlabel).setVisibility(View.INVISIBLE);
+        }
+        else
+        {
+            lProvider = lManager.getBestProvider(new Criteria(),true);
         }
 
         dbSettings = getSharedPreferences("DBSETTINGS",MODE_PRIVATE);
@@ -175,6 +199,10 @@ public class Logger extends ActionBarActivity implements SensorEventListener{
                     mMag,
                     UPDATE_RATE);
         }
+        if(LOC_ENABLED)
+        {
+            lManager.requestLocationUpdates(lProvider,400,1,this);
+        }
     }
 
     @Override
@@ -182,6 +210,7 @@ public class Logger extends ActionBarActivity implements SensorEventListener{
         // unregister listener
         super.onPause();
         mSensorManager.unregisterListener(this);
+        lManager.removeUpdates(this);
     }
 
 
@@ -245,6 +274,33 @@ public class Logger extends ActionBarActivity implements SensorEventListener{
     }
 
     @Override
+    public void onLocationChanged(Location location) {
+        lat = location.getLatitude();
+        lon = location.getLongitude();
+        EditText latval = (EditText)findViewById(R.id.latitude);
+        EditText lonval = (EditText)findViewById(R.id.longitude);
+        latval.setText(Double.toString(lat));
+        lonval.setText(Double.toString(lon));
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+        lProvider = lManager.getBestProvider(new Criteria(),true);
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+        if(provider.equals(lProvider))
+        {
+            lProvider = lManager.getBestProvider(new Criteria(),true);
+        }
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+    }
+
+    @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy)
     {
         /* Unused */
@@ -299,7 +355,7 @@ public class Logger extends ActionBarActivity implements SensorEventListener{
                     textFile = new File(dir, wfilename);
                     try {
                         writer = new BufferedWriter(new FileWriter(textFile));
-                        csv_text.append("Timestamp (ms),Accel_x,Accel_y,Accel_z,Gyro_x,Gyro_y,Gyro_z,Mag_x,Mag_y,Mag_z\n");
+                        csv_text.append("Timestamp (ms),Accel_x,Accel_y,Accel_z,Gyro_x,Gyro_y,Gyro_z,Mag_x,Mag_y,Mag_z,Lat,Lon\n");
                         writer_created = true;
                     } catch (IOException ex) {
                         testText.setText("Something went wrong!" + ex.getMessage());
@@ -354,7 +410,8 @@ public class Logger extends ActionBarActivity implements SensorEventListener{
         if(writer_created) {
             String newentry = String.valueOf(time_elapsed) + "," + Float.toString(a_x) + "," + Float.toString(a_y) + "," + Float.toString(a_z) + ","
                     + Float.toString(g_x) + "," + Float.toString(g_y) + "," + Float.toString(g_z) + ","
-                    + Float.toString(m_x) + "," + Float.toString(m_y) + "," + Float.toString(m_z) + "\n";
+                    + Float.toString(m_x) + "," + Float.toString(m_y) + "," + Float.toString(m_z) + ","
+                    + Double.toString(lat) + "," + Double.toString(lon) + "\n";
             csv_text.append(newentry);
             try {
                 writer.write(csv_text.toString());
