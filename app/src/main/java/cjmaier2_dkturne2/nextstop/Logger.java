@@ -201,7 +201,7 @@ public class Logger extends ActionBarActivity implements SensorEventListener, Lo
         }
         if(LOC_ENABLED)
         {
-            lManager.requestLocationUpdates(lProvider,400,1,this);
+            lManager.requestLocationUpdates(lProvider,1,1,this);
         }
     }
 
