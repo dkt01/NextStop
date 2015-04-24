@@ -42,7 +42,12 @@ import java.util.Locale;
 
 public class Logger extends ActionBarActivity implements SensorEventListener, LocationListener {
 
-    private final int UPDATE_RATE = SensorManager.SENSOR_DELAY_NORMAL;
+    private final int capture_speed = 0;
+    //0: DELAY_FASTEST
+    //1: DELAY_GAME
+    //3: DELAY_NORMAL
+    //2: DELAY_UI
+    private final int UPDATE_RATE = 3;
 
     private boolean ACCEL_ENABLED = false;
     private boolean GYRO_ENABLED = false;
@@ -101,7 +106,7 @@ public class Logger extends ActionBarActivity implements SensorEventListener, Lo
         GYRO_ENABLED = manager.hasSystemFeature(PackageManager.FEATURE_SENSOR_GYROSCOPE);
         MAG_ENABLED = manager.hasSystemFeature(PackageManager.FEATURE_SENSOR_COMPASS);
         LOC_ENABLED = lManager.isProviderEnabled(lManager.GPS_PROVIDER) |
-                      lManager.isProviderEnabled(lManager.NETWORK_PROVIDER);
+                lManager.isProviderEnabled(lManager.NETWORK_PROVIDER);
 
         if(!ACCEL_ENABLED)
         {
@@ -172,7 +177,22 @@ public class Logger extends ActionBarActivity implements SensorEventListener, Lo
                 Log.i("DBsetup", "ErrorInitializing", ex);
             }
         }
-
+        //display sensor delay speed (for debugging)
+        TextView senSpeed = (TextView)findViewById(R.id.testText);
+        switch(UPDATE_RATE) {
+            case 0:
+                senSpeed.setText("DELAY_FASTEST");
+                break;
+            case 1:
+                senSpeed.setText("DELAY_GAME");
+                break;
+            case 3:
+                senSpeed.setText("DELAY_NORMAL");
+                break;
+            case 2:
+                senSpeed.setText("DELAY_UI");
+                break;
+        }
     }
 
     @Override

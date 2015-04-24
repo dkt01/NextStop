@@ -296,6 +296,13 @@
                 android:layout_below="@+id/recbutton"
                 android:id="@+id/testText" />
 
+            <!-- sensor capture speed -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/testText"
+                android:id="@+id/senSpeed" />
+
         </RelativeLayout>
     </LinearLayout>
 </ScrollView>
