@@ -35,6 +35,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 //below for CSV
@@ -63,7 +64,7 @@ public class Logger extends ActionBarActivity implements SensorEventListener, Lo
 
     private SensorManager mSensorManager;
     private LocationManager lManager;
-    private String lProvider;
+    private List<String> lProviders;
     private Sensor mAccel;
     private Sensor mGyro;
     private Sensor mMag;
@@ -156,7 +157,7 @@ public class Logger extends ActionBarActivity implements SensorEventListener, Lo
         }
         else
         {
-            lProvider = lManager.getBestProvider(new Criteria(),true);
+            lProviders = lManager.getProviders(true);
         }
 
         dbSettings = getSharedPreferences("DBSETTINGS",MODE_PRIVATE);
@@ -221,7 +222,24 @@ public class Logger extends ActionBarActivity implements SensorEventListener, Lo
         }
         if(LOC_ENABLED)
         {
-            lManager.requestLocationUpdates(lProvider,1,1,this);
+            for(String provider:lProviders)
+                lManager.requestLocationUpdates(provider,0,0,this);
+
+            Location loc = null;
+
+            for(String provider:lProviders)
+            {
+                loc = lManager.getLastKnownLocation(provider);
+                if(loc != null)
+                    break;
+            }
+
+            lat = loc.getLatitude();
+            lon = loc.getLongitude();
+            EditText latval = (EditText)findViewById(R.id.latitude);
+            EditText lonval = (EditText)findViewById(R.id.longitude);
+            latval.setText(Double.toString(lat));
+            lonval.setText(Double.toString(lon));
         }
     }
 
@@ -304,17 +322,10 @@ public class Logger extends ActionBarActivity implements SensorEventListener, Lo
     }
 
     @Override
-    public void onProviderEnabled(String provider) {
-        lProvider = lManager.getBestProvider(new Criteria(),true);
-    }
+    public void onProviderEnabled(String provider) {}
 
     @Override
-    public void onProviderDisabled(String provider) {
-        if(provider.equals(lProvider))
-        {
-            lProvider = lManager.getBestProvider(new Criteria(),true);
-        }
-    }
+    public void onProviderDisabled(String provider) {}
 
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
