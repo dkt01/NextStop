@@ -8,7 +8,6 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -48,7 +47,7 @@ public class Logger extends ActionBarActivity implements SensorEventListener, Lo
     //1: DELAY_GAME
     //3: DELAY_NORMAL
     //2: DELAY_UI
-    private final int UPDATE_RATE = 3;
+    private final int UPDATE_RATE = 2;
 
     private boolean ACCEL_ENABLED = false;
     private boolean GYRO_ENABLED = false;
@@ -95,9 +94,13 @@ public class Logger extends ActionBarActivity implements SensorEventListener, Lo
 
     private String wfilename;
 
+    private android.os.Handler guiHandler;
+    private int guiInterval = 500; // 500 mS
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        guiHandler = new android.os.Handler();
         setContentView(R.layout.activity_logger);
         TextView testText = (TextView)findViewById(R.id.testText);
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -106,8 +109,7 @@ public class Logger extends ActionBarActivity implements SensorEventListener, Lo
         ACCEL_ENABLED = manager.hasSystemFeature(PackageManager.FEATURE_SENSOR_ACCELEROMETER);
         GYRO_ENABLED = manager.hasSystemFeature(PackageManager.FEATURE_SENSOR_GYROSCOPE);
         MAG_ENABLED = manager.hasSystemFeature(PackageManager.FEATURE_SENSOR_COMPASS);
-        LOC_ENABLED = lManager.isProviderEnabled(lManager.GPS_PROVIDER) |
-                lManager.isProviderEnabled(lManager.NETWORK_PROVIDER);
+        LOC_ENABLED = lManager.isProviderEnabled(lManager.GPS_PROVIDER);
 
         if(!ACCEL_ENABLED)
         {
@@ -200,6 +202,7 @@ public class Logger extends ActionBarActivity implements SensorEventListener, Lo
     protected void onResume()
     {
         super.onResume();
+        guiUpdate.run();
         // register this class as a listener for the orientation and
         // accelerometer sensors
         if(ACCEL_ENABLED)
@@ -222,24 +225,30 @@ public class Logger extends ActionBarActivity implements SensorEventListener, Lo
         }
         if(LOC_ENABLED)
         {
-            for(String provider:lProviders)
-                lManager.requestLocationUpdates(provider,0,0,this);
-
-            Location loc = null;
-
-            for(String provider:lProviders)
+            // This seems to cause issues since different providers have
+            // different locations at the same time.
+//            for(String provider:lProviders)
+//                lManager.requestLocationUpdates(provider,50,0,this);
+//
+//            Location loc = null;
+//
+//            for(String provider:lProviders)
+//            {
+//                loc = lManager.getLastKnownLocation(provider);
+//                if(loc != null)
+//                    break;
+//            }
+            lManager.requestLocationUpdates(lManager.GPS_PROVIDER,50,0,this);
+            Location loc = lManager.getLastKnownLocation(lManager.GPS_PROVIDER);
+            if(loc != null)
             {
-                loc = lManager.getLastKnownLocation(provider);
-                if(loc != null)
-                    break;
+                lat = loc.getLatitude();
+                lon = loc.getLongitude();
+                EditText latval = (EditText) findViewById(R.id.latitude);
+                EditText lonval = (EditText) findViewById(R.id.longitude);
+                latval.setText(Double.toString(lat));
+                lonval.setText(Double.toString(lon));
             }
-
-            lat = loc.getLatitude();
-            lon = loc.getLongitude();
-            EditText latval = (EditText)findViewById(R.id.latitude);
-            EditText lonval = (EditText)findViewById(R.id.longitude);
-            latval.setText(Double.toString(lat));
-            lonval.setText(Double.toString(lon));
         }
     }
 
@@ -247,6 +256,7 @@ public class Logger extends ActionBarActivity implements SensorEventListener, Lo
     protected void onPause() {
         // unregister listener
         super.onPause();
+        guiHandler.removeCallbacks(guiUpdate);
         mSensorManager.unregisterListener(this);
         lManager.removeUpdates(this);
     }
@@ -274,6 +284,47 @@ public class Logger extends ActionBarActivity implements SensorEventListener, Lo
         return super.onOptionsItemSelected(item);
     }
 
+    Runnable guiUpdate = new Runnable() {
+        @Override
+        public void run() {
+            guiHandler.postDelayed(guiUpdate, guiInterval);
+
+            EditText axval = (EditText)findViewById(R.id.axisxaccel);
+            EditText ayval = (EditText)findViewById(R.id.axisyaccel);
+            EditText azval = (EditText)findViewById(R.id.axiszaccel);
+            EditText gxval = (EditText)findViewById(R.id.axisxgyro);
+            EditText gyval = (EditText)findViewById(R.id.axisygyro);
+            EditText gzval = (EditText)findViewById(R.id.axiszgyro);
+            EditText mxval = (EditText)findViewById(R.id.axisxmag);
+            EditText myval = (EditText)findViewById(R.id.axisymag);
+            EditText mzval = (EditText)findViewById(R.id.axiszmag);
+            EditText latval = (EditText)findViewById(R.id.latitude);
+            EditText lonval = (EditText)findViewById(R.id.longitude);
+            EditText time = (EditText)findViewById(R.id.time);
+
+            if(ACCEL_ENABLED) {
+                axval.setText(Float.toString(a_x));
+                ayval.setText(Float.toString(a_y));
+                azval.setText(Float.toString(a_z));
+            }
+            if(GYRO_ENABLED) {
+                gxval.setText(Float.toString(g_x));
+                gyval.setText(Float.toString(g_y));
+                gzval.setText(Float.toString(g_z));
+            }
+            if(MAG_ENABLED) {
+                mxval.setText(Float.toString(m_x));
+                myval.setText(Float.toString(m_y));
+                mzval.setText(Float.toString(m_z));
+            }
+            if(LOC_ENABLED) {
+                latval.setText(Double.toString(lat));
+                lonval.setText(Double.toString(lon));
+            }
+            time.setText(Double.toString(time_elapsed));
+        }
+    };
+
     @Override
     public void onSensorChanged(SensorEvent event)
     {
@@ -281,9 +332,7 @@ public class Logger extends ActionBarActivity implements SensorEventListener, Lo
             time_elapsed_started = true;
             start_time = event.timestamp;
         }
-        EditText time = (EditText)findViewById(R.id.time);
         time_elapsed = (event.timestamp - start_time)/1000000.0;
-        time.setText(Double.toString(time_elapsed));
 
         if(ACCEL_ENABLED)
         {
@@ -315,10 +364,6 @@ public class Logger extends ActionBarActivity implements SensorEventListener, Lo
     public void onLocationChanged(Location location) {
         lat = location.getLatitude();
         lon = location.getLongitude();
-        EditText latval = (EditText)findViewById(R.id.latitude);
-        EditText lonval = (EditText)findViewById(R.id.longitude);
-        latval.setText(Double.toString(lat));
-        lonval.setText(Double.toString(lon));
     }
 
     @Override
@@ -430,13 +475,6 @@ public class Logger extends ActionBarActivity implements SensorEventListener, Lo
         a_x = values[0];
         a_y = values[1];
         a_z = values[2];
-        EditText xval = (EditText)findViewById(R.id.axisxaccel);
-        EditText yval = (EditText)findViewById(R.id.axisyaccel);
-        EditText zval = (EditText)findViewById(R.id.axiszaccel);
-
-        xval.setText(Float.toString(a_x));
-        yval.setText(Float.toString(a_y));
-        zval.setText(Float.toString(a_z));
 
         if(writer_created) {
             String newentry = String.valueOf(time_elapsed) + "," + Float.toString(a_x) + "," + Float.toString(a_y) + "," + Float.toString(a_z) + ","
@@ -462,13 +500,6 @@ public class Logger extends ActionBarActivity implements SensorEventListener, Lo
         g_x = values[0];
         g_y = values[1];
         g_z = values[2];
-        EditText xval = (EditText)findViewById(R.id.axisxgyro);
-        EditText yval = (EditText)findViewById(R.id.axisygyro);
-        EditText zval = (EditText)findViewById(R.id.axiszgyro);
-
-        xval.setText(Float.toString(g_x));
-        yval.setText(Float.toString(g_y));
-        zval.setText(Float.toString(g_z));
     }
 
     private void getMagnetometer(SensorEvent event)
@@ -477,12 +508,5 @@ public class Logger extends ActionBarActivity implements SensorEventListener, Lo
         m_x = values[0];
         m_y = values[1];
         m_z = values[2];
-        EditText xval = (EditText)findViewById(R.id.axisxmag);
-        EditText yval = (EditText)findViewById(R.id.axisymag);
-        EditText zval = (EditText)findViewById(R.id.axiszmag);
-
-        xval.setText(Float.toString(m_x));
-        yval.setText(Float.toString(m_y));
-        zval.setText(Float.toString(m_z));
     }
 }
