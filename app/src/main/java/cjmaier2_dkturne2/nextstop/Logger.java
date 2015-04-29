@@ -95,7 +95,7 @@ public class Logger extends ActionBarActivity implements SensorEventListener, Lo
     private String wfilename;
 
     private android.os.Handler guiHandler;
-    private int guiInterval = 500; // 500 mS
+    private int guiInterval = 1000; // 1000 mS
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
