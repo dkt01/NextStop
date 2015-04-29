@@ -47,7 +47,7 @@ public class Logger extends ActionBarActivity implements SensorEventListener, Lo
     //1: DELAY_GAME
     //3: DELAY_NORMAL
     //2: DELAY_UI
-    private final int UPDATE_RATE = 2;
+    private final int UPDATE_RATE = 50000;
 
     private boolean ACCEL_ENABLED = false;
     private boolean GYRO_ENABLED = false;
