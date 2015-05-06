@@ -444,6 +444,7 @@ public class Logger extends ActionBarActivity implements SensorEventListener, Lo
             if(writer_created)
             {
                 File dir;
+                writer_created = false;
                 try {
                     writer.close();
                     // Write to Dropbox
@@ -456,8 +457,6 @@ public class Logger extends ActionBarActivity implements SensorEventListener, Lo
                     }
                 } catch (IOException ex) {
                     testText.setText("Something went wrong!(IO)" + ex.getMessage());
-                } finally {
-                    writer_created = false;
                 }
             }
         }

@@ -12,4 +12,5 @@
     <string name="title_activity_dropbox_setup">DropboxSetup</string>
     <string name="title_activity_step_count">StepCount</string>
     <string name="title_activity_mic_test">MicTest</string>
+    <string name="title_activity_stop_tracker">StopTracker</string>
 </resources>

@@ -84,6 +84,12 @@ public class MainActivity extends ActionBarActivity {
         startActivity(intent);
     }
 
+    public void launchTracker(View view)
+    {
+        Intent intent = new Intent(this, StopTracker.class);
+        startActivity(intent);
+    }
+
     public void launchDropboxSetup(View view)
     {
         Intent intent = new Intent(this, DropboxSetup.class);

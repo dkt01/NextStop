@@ -10,9 +10,10 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:largeHeap="true"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="cjmaier2_dkturne2.nextstop.MainActivity"
+            android:name=".MainActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait" >
             <intent-filter>
@@ -22,25 +23,25 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="cjmaier2_dkturne2.nextstop.GyroTest"
+            android:name=".GyroTest"
             android:label="@string/title_activity_gyro_test"
-            android:parentActivityName="cjmaier2_dkturne2.nextstop.MainActivity"
+            android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="cjmaier2_dkturne2.nextstop.MainActivity" />
         </activity>
         <activity
-            android:name="cjmaier2_dkturne2.nextstop.AccelTest"
+            android:name=".AccelTest"
             android:label="@string/title_activity_accel_test"
-            android:parentActivityName="cjmaier2_dkturne2.nextstop.MainActivity"
+            android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="cjmaier2_dkturne2.nextstop.MainActivity" />
         </activity>
         <activity
-            android:name="cjmaier2_dkturne2.nextstop.MagTest"
+            android:name=".MagTest"
             android:label="@string/title_activity_mag_test" >
             android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait" >
@@ -49,37 +50,37 @@
                 android:value="cjmaier2_dkturne2.nextstop.MainActivity" />
         </activity>
         <activity
-            android:name="cjmaier2_dkturne2.nextstop.LightTest"
+            android:name=".LightTest"
             android:label="@string/title_activity_light_test"
-            android:parentActivityName="cjmaier2_dkturne2.nextstop.MainActivity"
+            android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="cjmaier2_dkturne2.nextstop.MainActivity" />
         </activity>
         <activity
-            android:name="cjmaier2_dkturne2.nextstop.WiFiTest"
+            android:name=".WiFiTest"
             android:label="@string/title_activity_wifi_test"
-            android:parentActivityName="cjmaier2_dkturne2.nextstop.MainActivity"
+            android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="cjmaier2_dkturne2.nextstop.MainActivity" />
         </activity>
         <activity
-            android:name="cjmaier2_dkturne2.nextstop.Logger"
+            android:name=".Logger"
             android:label="@string/title_activity_logger"
-            android:parentActivityName="cjmaier2_dkturne2.nextstop.MainActivity"
+            android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="cjmaier2_dkturne2.nextstop.MainActivity" />
         </activity>
         <activity
-            android:name="cjmaier2_dkturne2.nextstop.DropboxSetup"
+            android:name=".DropboxSetup"
             android:label="@string/title_activity_dropbox_setup"
             android:launchMode="singleTask"
-            android:parentActivityName="cjmaier2_dkturne2.nextstop.MainActivity"
+            android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -99,19 +100,27 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="cjmaier2_dkturne2.nextstop.StepCount"
+            android:name=".StepCount"
             android:label="Trajectory Calculator"
-            android:parentActivityName="cjmaier2_dkturne2.nextstop.MainActivity"
+            android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="cjmaier2_dkturne2.nextstop.MainActivity" />
         </activity>
         <activity
-            android:name="cjmaier2_dkturne2.nextstop.MicTest"
+            android:name=".MicTest"
             android:label="@string/title_activity_mic_test"
-            android:parentActivityName="cjmaier2_dkturne2.nextstop.MainActivity"
+            android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="cjmaier2_dkturne2.nextstop.MainActivity" />
+        </activity>
+        <activity
+            android:name=".StopTracker"
+            android:label="@string/title_activity_stop_tracker"
+            android:parentActivityName=".MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="cjmaier2_dkturne2.nextstop.MainActivity" />
