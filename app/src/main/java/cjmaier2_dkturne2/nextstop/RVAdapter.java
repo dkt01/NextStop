@@ -1,11 +1,15 @@
 package cjmaier2_dkturne2.nextstop;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.shapes.Shape;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.util.DisplayMetrics;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -66,17 +70,25 @@ public class RVAdapter extends RecyclerView.Adapter<RVAdapter.BusStopViewHolder>
         List<Route> routes = busStops.get(i).routes;
         busStopViewHolder.stopName.setText(busStops.get(i).name);
         busStopViewHolder.stopDistance.setText(Integer.toString(busStops.get(i).distance) + " m");
-        Drawable rect;
-        for(Route route:routes){
-            rect = ctx.getResources().getDrawable(R.drawable.rectangle);
-            rect.setColorFilter(route.getColVal(), PorterDuff.Mode.SRC_ATOP);
-//            busStopViewHolder.stopRoutes.addView(rect);
+        int vsize = 100;
+        vsize /= routes.size()>0?routes.size():1;
+        busStopViewHolder.stopRoutes.removeAllViews();
+        for(Route route:routes) {
+            Bitmap bitmap = Bitmap.createBitmap( dipToPixels(ctx,50), dipToPixels(ctx,vsize), Bitmap.Config.ARGB_8888 );
+            bitmap.eraseColor(route.getColVal());
+            ImageView rectim = new ImageView(ctx);
+            rectim.setImageBitmap(bitmap);
+            busStopViewHolder.stopRoutes.addView(rectim);
         }
-//        busStopViewHolder.stopRoutes.setImageResource(busStops.get(i).photoId);
     }
 
     @Override
     public int getItemCount() {
         return busStops.size();
+    }
+
+    public static int dipToPixels(Context context, int dipValue) {
+        DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+        return (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dipValue, metrics);
     }
 }

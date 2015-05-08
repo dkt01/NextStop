@@ -3,4 +3,7 @@
     android:shape="rectangle"
     android:layout_width="match_parent">
     <solid android:color="#000000"/>
+    <size
+        android:width="40dp"
+        android:height="40dp"/>
 </shape>

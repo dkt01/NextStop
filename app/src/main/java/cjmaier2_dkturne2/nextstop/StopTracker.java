@@ -12,15 +12,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import cjmaier2_dkturne2.nextstop.R;
-
 public class StopTracker extends ActionBarActivity {
 
     private List<BusStopData> busStops;
     private RecyclerView rv;
 
     private android.os.Handler guiHandler;
-    private int guiInterval = 250; // 1000 mS
+    private int guiInterval = 1000; // 1000 mS
     private boolean create = true;
 
     @Override
@@ -77,9 +75,12 @@ public class StopTracker extends ActionBarActivity {
 
     private void initializeData(){
         busStops = new ArrayList<>();
-        busStops.add(new BusStopData("Wright & Springfield", new ArrayList<Route>() , 50));
-        busStops.add(new BusStopData("Wright & Healey", new ArrayList<Route>(), 70));
-        busStops.add(new BusStopData("Transit Plaza", new ArrayList<Route>(), 90));
+        ArrayList<Route> routes = new ArrayList<Route>();
+        routes.add(Route.BLUE);
+        routes.add(Route.LIME);
+        busStops.add(new BusStopData("Wright & Springfield", (ArrayList<Route>) routes.clone() , 50));
+        busStops.add(new BusStopData("Wright & Healey", (ArrayList<Route>) routes.clone(), 70));
+        busStops.add(new BusStopData("Transit Plaza", (ArrayList<Route>) routes.clone(), 90));
     }
 
     private void initializeAdapter(){
@@ -118,8 +119,12 @@ public class StopTracker extends ActionBarActivity {
             if(create)
             {
                 Random r = new Random();
-                
-                addItem(new BusStopData("Wright & Chalmers", new ArrayList<Route>(), r.nextInt(500)));
+                ArrayList<Route> routes = new ArrayList<Route>();
+                for(int i = 0; i <= r.nextInt(9); i++)
+                {
+                    routes.add(Route.values()[r.nextInt(Route.values().length)]);
+                }
+                addItem(new BusStopData("Wright & Chalmers", (ArrayList<Route>) routes.clone(), r.nextInt(500)));
             }
             else
             {
