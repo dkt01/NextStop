@@ -1,27 +1,22 @@
 package cjmaier2_dkturne2.nextstop;
 
 import android.content.Context;
-import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.location.Location;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.PriorityQueue;
 
-public class DataBaseHelper_Stops extends SQLiteOpenHelper {
+public class DataBaseHelper_Shapes extends SQLiteOpenHelper {
 
-    private static String DB_NAME = "stops.sqlite";
+    private static String DB_NAME = "shapes.sqlite";
     private String DB_PATH;
 
-    private final String TABLE_NAME = "stops";
+    private final String TABLE_NAME = "shapes";
 
     private SQLiteDatabase myDataBase;
 
@@ -31,7 +26,7 @@ public class DataBaseHelper_Stops extends SQLiteOpenHelper {
      * Constructor
      * Takes and keeps a reference of the passed context in order to access to the application assets and resources.
      */
-    public DataBaseHelper_Stops(Context context) {
+    public DataBaseHelper_Shapes(Context context) {
 
         super(context, DB_NAME, null, 1);
         this.myContext = context;
@@ -157,59 +152,5 @@ public class DataBaseHelper_Stops extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
-    }
-
-    public List<String> nearestStop(double lat, double lon) {
-        float MAX_DIST = 50; // Only return stops under 50 meters away
-        ArrayList<String> retval = new ArrayList();
-        PriorityQueue<pqEntry> pq = new PriorityQueue();
-        Cursor c = myDataBase.rawQuery("select * from "+TABLE_NAME,null);
-        while (c.moveToNext())
-        {
-            float[] dist = {0};
-            Location.distanceBetween(c.getDouble(4), c.getDouble(5), lat, lon, dist);
-            pq.add(new pqEntry(dist[0],c.getString(0)));
-        }
-        c.close();
-        retval.add(pq.remove().name);
-        while(pq.peek().distance <= MAX_DIST)
-            retval.add(pq.remove().name);
-        return retval;
-    }
-
-    class pqEntry implements Comparable<pqEntry> {
-        final float distance;
-        final String name;
-
-        public pqEntry(float d, String n) {
-            distance = d;
-            name = n;
-        }
-
-        public int compareTo(pqEntry other) {
-            return distance < other.distance ? -1 : distance > other.distance ? 1 : 0;
-        }
-    }
-
-    public String getStopName(String stop_id) {
-        String retval = null;
-        Cursor c = myDataBase.rawQuery("select * from "+TABLE_NAME+" where stop_id='"+stop_id+"'",null);
-        if(c.moveToFirst())
-        {
-            retval = c.getString(2);
-        }
-        c.close();
-        return retval;
-    }
-
-    public float getDist2Stop(String stop_id, double lat, double lon) {
-        float[] retval = {-1};
-        Cursor c = myDataBase.rawQuery("select * from "+TABLE_NAME+" where stop_id='"+stop_id+"'",null);
-        if(c.moveToFirst())
-        {
-            Location.distanceBetween(c.getDouble(4), c.getDouble(5), lat, lon, retval);
-        }
-        c.close();
-        return retval[0];
     }
 }

@@ -7,11 +7,13 @@ import java.util.List;
  */
 public class BusStopData {
     public String name;
+    public String stopID;
     public int distance;
     public List<Route> routes;
 
-    BusStopData(String name, List<Route> routes, int distance) {
+    BusStopData(String name, String stopID, List<Route> routes, int distance) {
         this.name = name;
+        this.stopID = stopID;
         this.routes = routes;
         this.distance = distance;
     }

@@ -1,22 +1,19 @@
 package cjmaier2_dkturne2.nextstop;
 
 import android.content.Context;
-import android.hardware.SensorEventListener;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.EditText;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class StopTracker extends ActionBarActivity implements LocationListener {
 
@@ -31,7 +28,11 @@ public class StopTracker extends ActionBarActivity implements LocationListener {
     private int guiInterval = 1000; // 1000 mS
     private boolean create = true;
 
+    private DataBaseHelper_Routes routesDB;
+    private DataBaseHelper_Shapes shapesDB;
     private DataBaseHelper_Stops stopsDB;
+    private DataBaseHelper_StopTimes stoptimesDB;
+    private DataBaseHelper_Trips tripsDB;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +52,11 @@ public class StopTracker extends ActionBarActivity implements LocationListener {
         guiHandler = new android.os.Handler();
         lManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
+        routesDB = new DataBaseHelper_Routes(this.getApplicationContext());
+        shapesDB = new DataBaseHelper_Shapes(this.getApplicationContext());
         stopsDB = new DataBaseHelper_Stops(this.getApplicationContext());
+        stoptimesDB = new DataBaseHelper_StopTimes(this.getApplicationContext());
+        tripsDB = new DataBaseHelper_Trips(this.getApplicationContext());
     }
 
     @Override
@@ -72,6 +77,7 @@ public class StopTracker extends ActionBarActivity implements LocationListener {
     protected void onPause() {
         super.onPause();
         guiHandler.removeCallbacks(guiUpdate);
+        lManager.removeUpdates(this);
     }
 
     @Override
@@ -101,10 +107,8 @@ public class StopTracker extends ActionBarActivity implements LocationListener {
         lat = location.getLatitude();
         lon = location.getLongitude();
         List<String> stops = stopsDB.nearestStop(lat,lon);
-        int i = 0;
         for(String stop:stops) {
-            addItem(new BusStopData(stop, new ArrayList<Route>(), i));
-            i++;
+            addItem(new BusStopData(stopsDB.getStopName(stop), stop, getRoutesByStop(stop), (int)stopsDB.getDist2Stop(stop,lat,lon)));
         }
     }
 
@@ -123,9 +127,9 @@ public class StopTracker extends ActionBarActivity implements LocationListener {
         ArrayList<Route> routes = new ArrayList<Route>();
         routes.add(Route.BLUE);
         routes.add(Route.LIME);
-        busStops.add(new BusStopData("Wright & Springfield", (ArrayList<Route>) routes.clone() , 50));
-        busStops.add(new BusStopData("Wright & Healey", (ArrayList<Route>) routes.clone(), 70));
-        busStops.add(new BusStopData("Transit Plaza", (ArrayList<Route>) routes.clone(), 90));
+        busStops.add(new BusStopData("Wright & Springfield", "", (ArrayList) routes.clone() , 50));
+        busStops.add(new BusStopData("Wright & Healey", "", (ArrayList) routes.clone(), 70));
+        busStops.add(new BusStopData("Transit Plaza", "", (ArrayList) routes.clone(), 90));
     }
 
     private void initializeAdapter(){
@@ -178,4 +182,11 @@ public class StopTracker extends ActionBarActivity implements LocationListener {
 //            create = !create;
         }
     };
+
+    // Returns list of route colors for a given stop
+    public List<Route> getRoutesByStop(String stopID) {
+        List<String> trips = stoptimesDB.getTrips(stopID);
+        List<String> routeIDs = tripsDB.getRoutes(trips);
+        return routesDB.getRouteColors(routeIDs);
+    }
 }
