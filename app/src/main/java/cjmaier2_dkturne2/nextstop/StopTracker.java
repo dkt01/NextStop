@@ -1,5 +1,10 @@
 package cjmaier2_dkturne2.nextstop;
 
+import android.content.Context;
+import android.hardware.SensorEventListener;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -7,19 +12,26 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.EditText;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class StopTracker extends ActionBarActivity {
+public class StopTracker extends ActionBarActivity implements LocationListener {
 
     private List<BusStopData> busStops;
     private RecyclerView rv;
 
+    private LocationManager lManager;
+    private double lat = 0;
+    private double lon = 0;
+
     private android.os.Handler guiHandler;
     private int guiInterval = 1000; // 1000 mS
     private boolean create = true;
+
+    private DataBaseHelper_Stops stopsDB;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,12 +49,23 @@ public class StopTracker extends ActionBarActivity {
         initializeAdapter();
 
         guiHandler = new android.os.Handler();
+        lManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+        stopsDB = new DataBaseHelper_Stops(this.getApplicationContext());
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         guiUpdate.run();
+
+        lManager.requestLocationUpdates(lManager.GPS_PROVIDER, 500, 1, this);
+        Location loc = lManager.getLastKnownLocation(lManager.GPS_PROVIDER);
+        if(loc != null)
+        {
+            lat = loc.getLatitude();
+            lon = loc.getLongitude();
+        }
     }
 
     @Override
@@ -71,6 +94,28 @@ public class StopTracker extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        lat = location.getLatitude();
+        lon = location.getLongitude();
+        List<String> stops = stopsDB.nearestStop(lat,lon);
+        int i = 0;
+        for(String stop:stops) {
+            addItem(new BusStopData(stop, new ArrayList<Route>(), i));
+            i++;
+        }
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {}
+
+    @Override
+    public void onProviderDisabled(String provider) {}
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
     }
 
     private void initializeData(){
@@ -116,21 +161,21 @@ public class StopTracker extends ActionBarActivity {
         @Override
         public void run() {
             guiHandler.postDelayed(guiUpdate, guiInterval);
-            if(create)
-            {
-                Random r = new Random();
-                ArrayList<Route> routes = new ArrayList<Route>();
-                for(int i = 0; i <= r.nextInt(9); i++)
-                {
-                    routes.add(Route.values()[r.nextInt(Route.values().length)]);
-                }
-                addItem(new BusStopData("Wright & Chalmers", (ArrayList<Route>) routes.clone(), r.nextInt(500)));
-            }
-            else
-            {
-                removeItem(busStops.get(0));
-            }
-            create = !create;
+//            if(create)
+//            {
+//                Random r = new Random();
+//                ArrayList<Route> routes = new ArrayList<Route>();
+//                for(int i = 0; i <= r.nextInt(9); i++)
+//                {
+//                    routes.add(Route.values()[r.nextInt(Route.values().length)]);
+//                }
+//                addItem(new BusStopData("Wright & Chalmers", (ArrayList<Route>) routes.clone(), r.nextInt(500)));
+//            }
+//            else
+//            {
+//                removeItem(busStops.get(0));
+//            }
+//            create = !create;
         }
     };
 }
