@@ -124,12 +124,6 @@ public class StopTracker extends ActionBarActivity implements LocationListener {
 
     private void initializeData(){
         busStops = new ArrayList<>();
-        ArrayList<Route> routes = new ArrayList<Route>();
-        routes.add(Route.BLUE);
-        routes.add(Route.LIME);
-        busStops.add(new BusStopData("Wright & Springfield", "", (ArrayList) routes.clone() , 50));
-        busStops.add(new BusStopData("Wright & Healey", "", (ArrayList) routes.clone(), 70));
-        busStops.add(new BusStopData("Transit Plaza", "", (ArrayList) routes.clone(), 90));
     }
 
     private void initializeAdapter(){

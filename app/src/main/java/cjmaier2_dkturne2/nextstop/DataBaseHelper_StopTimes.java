@@ -6,14 +6,15 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.location.Location;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
 
@@ -169,5 +170,43 @@ public class DataBaseHelper_StopTimes extends SQLiteOpenHelper {
         }
         c.close();
         return new ArrayList<>(retval);
+    }
+
+    public List<String> getTripCandidates(String stopID, GregorianCalendar now) {
+        SimpleDateFormat outFormat = new SimpleDateFormat("HH:mm:ss");
+        ArrayList<String> retval = new ArrayList<String>();
+        now.add(Calendar.MINUTE,5);
+        String preVal = outFormat.format(now.getTime());
+        now.add(Calendar.MINUTE,10);
+        String postVal = outFormat.format(now.getTime());
+        Cursor c = myDataBase.rawQuery("SELECT * FROM "+TABLE_NAME+"WHERE stop_id='"+stopID+"' " +
+                                       "AND strftime( '%H:%M:%S', departure_time ) >= strftime( '%H:%M:%S', '"+preVal+"' ) " +
+                                       "AND strftime( '%H:%M:%S', departure_time ) <= strftime( '%H:%M:%S', '"+postVal+"' ) ",null);
+        while (c.moveToNext())
+        {
+            retval.add(c.getString(0));
+        }
+        c.close();
+        return retval;
+    }
+
+    public List<String> getUpcomingStops(String stopID, String tripID) {
+        ArrayList<String> retval = new ArrayList<String>();
+        // Get trip sequence number first
+        Cursor c = myDataBase.rawQuery("SELECT * FROM "+TABLE_NAME+"WHERE stop_id='"+stopID+"' " +
+                                       "AND trip_id='"+tripID+"'",null);
+        if(c.moveToFirst())
+        {
+            int seqnum = c.getInt(4);
+            Cursor d = myDataBase.rawQuery("SELECT * FROM "+TABLE_NAME+"WHERE trip_id='"+tripID+"' " +
+                    "AND stop_sequence>"+Integer.toString(seqnum),null);
+            while (d.moveToNext())
+            {
+                retval.add(d.getString(3));
+            }
+            d.close();
+        }
+        c.close();
+        return retval;
     }
 }
