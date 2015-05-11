@@ -212,4 +212,16 @@ public class DataBaseHelper_Stops extends SQLiteOpenHelper {
         c.close();
         return retval[0];
     }
+
+    public Location getStopLocation(String stop_id) {
+        Location retval = null;
+        Cursor c = myDataBase.rawQuery("select * from "+TABLE_NAME+" where stop_id='"+stop_id+"'",null);
+        if(c.moveToFirst())
+        {
+            retval = new Location("");
+            retval.setLatitude(c.getDouble(4));
+            retval.setLongitude(c.getDouble(5));
+        }
+        return retval;
+    }
 }

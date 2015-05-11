@@ -13,6 +13,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import java.util.ArrayList;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 public class StopTracker extends ActionBarActivity implements LocationListener {
@@ -33,6 +34,9 @@ public class StopTracker extends ActionBarActivity implements LocationListener {
     private DataBaseHelper_Stops stopsDB;
     private DataBaseHelper_StopTimes stoptimesDB;
     private DataBaseHelper_Trips tripsDB;
+
+    private List<RoutePath> tripCandidates;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -182,5 +186,17 @@ public class StopTracker extends ActionBarActivity implements LocationListener {
         List<String> trips = stoptimesDB.getTrips(stopID);
         List<String> routeIDs = tripsDB.getRoutes(trips);
         return routesDB.getRouteColors(routeIDs);
+    }
+
+    public void getCandidates(Location loc) {
+        List<String> stopCandidates = stopsDB.nearestStop(loc.getLatitude(),loc.getLongitude());
+        for(String stopCandidate:stopCandidates) {
+            List<String> tCandidates = stoptimesDB.getTripCandidates(stopCandidate,new GregorianCalendar());
+            for(String tCandidate:tCandidates) {
+                List<Location> waypoints = shapesDB.getWaypoints(tCandidate);
+                tripCandidates.add(new RoutePath(waypoints,stopsDB.getStopLocation(stopCandidate),
+                                                 tCandidate,tripsDB.getRoutes(tCandidate),stopCandidate));
+            }
+        }
     }
 }

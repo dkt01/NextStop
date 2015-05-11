@@ -1,15 +1,19 @@
 package cjmaier2_dkturne2.nextstop;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.location.Location;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DataBaseHelper_Shapes extends SQLiteOpenHelper {
 
@@ -152,5 +156,18 @@ public class DataBaseHelper_Shapes extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
+    }
+
+    public List<Location> getWaypoints(String shape_id) {
+        List<Location> retval = new ArrayList();
+        Cursor c = myDataBase.rawQuery("select * from "+TABLE_NAME+" where shape_id='"+shape_id+"' ORDER BY shape_pt_sequence ASC",null);
+        if(c.moveToFirst())
+        {
+            Location loc = new Location("");
+            loc.setLatitude(c.getDouble(1));
+            loc.setLongitude(c.getDouble(2));
+            retval.add(loc);
+        }
+        return retval;
     }
 }

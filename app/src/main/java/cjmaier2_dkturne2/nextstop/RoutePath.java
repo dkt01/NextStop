@@ -13,12 +13,16 @@ public class RoutePath {
     private int curPreIdx; // Stores index of waypoints before curPos
     private final int MAXERROR = 1000; // Maximum correction of dead reckoning error in meters
     private final String tripID;
+    private final String routeID;
+    private String recentStop;
 
-    public RoutePath(List<Location> waypoints, Location start, String tripID) {
+    public RoutePath(List<Location> waypoints, Location start, String tripID, String routeID, String recentStop) {
         this.waypoints = waypoints;
         this.curPos = start;
         this.curPreIdx = getPreIdx(start);
         this.tripID = tripID;
+        this.routeID = routeID;
+        this.recentStop = recentStop;
     }
 
     /* Calculates distance along the route path from current position to end.
@@ -62,6 +66,18 @@ public class RoutePath {
 
     public String getTripID() {
         return tripID;
+    }
+
+    public String getRouteID() {
+        return routeID;
+    }
+
+    public String getRecentStop() {
+        return recentStop;
+    }
+
+    public void setRecentStop(String stop) {
+        recentStop = stop;
     }
 
     public Location moveAlongPath(float dist, float bearing) {

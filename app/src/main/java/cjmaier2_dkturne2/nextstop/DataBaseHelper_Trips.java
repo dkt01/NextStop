@@ -6,6 +6,7 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.location.Location;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -169,5 +170,22 @@ public class DataBaseHelper_Trips extends SQLiteOpenHelper {
             c.close();
         }
         return new ArrayList<>(retval);
+    }
+
+    public String getRoutes(String trip) {
+        List<String> inval = new ArrayList<>();
+        inval.add(trip);
+        return getRoutes(inval).get(0);
+    }
+
+    public String getShapeID(String tripID) {
+        String retval = null;
+        Cursor c = myDataBase.rawQuery("select * from "+TABLE_NAME+" where trip_id='"+tripID+"'",null);
+        if(c.moveToFirst())
+        {
+            retval = c.getString(4);
+        }
+        c.close();
+        return retval;
     }
 }

@@ -174,7 +174,7 @@ public class DataBaseHelper_StopTimes extends SQLiteOpenHelper {
 
     public List<String> getTripCandidates(String stopID, GregorianCalendar now) {
         SimpleDateFormat outFormat = new SimpleDateFormat("HH:mm:ss");
-        ArrayList<String> retval = new ArrayList<String>();
+        ArrayList<String> retval = new ArrayList();
         now.add(Calendar.MINUTE,5);
         String preVal = outFormat.format(now.getTime());
         now.add(Calendar.MINUTE,10);
@@ -191,7 +191,7 @@ public class DataBaseHelper_StopTimes extends SQLiteOpenHelper {
     }
 
     public List<String> getUpcomingStops(String stopID, String tripID) {
-        ArrayList<String> retval = new ArrayList<String>();
+        ArrayList<String> retval = new ArrayList();
         // Get trip sequence number first
         Cursor c = myDataBase.rawQuery("SELECT * FROM "+TABLE_NAME+"WHERE stop_id='"+stopID+"' " +
                                        "AND trip_id='"+tripID+"'",null);
@@ -199,7 +199,7 @@ public class DataBaseHelper_StopTimes extends SQLiteOpenHelper {
         {
             int seqnum = c.getInt(4);
             Cursor d = myDataBase.rawQuery("SELECT * FROM "+TABLE_NAME+"WHERE trip_id='"+tripID+"' " +
-                    "AND stop_sequence>"+Integer.toString(seqnum),null);
+                    "AND stop_sequence>"+Integer.toString(seqnum)+" ORDER BY stop_sequence ASC",null);
             while (d.moveToNext())
             {
                 retval.add(d.getString(3));
