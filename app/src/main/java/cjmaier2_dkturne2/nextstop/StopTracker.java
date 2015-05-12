@@ -189,7 +189,8 @@ public class StopTracker extends ActionBarActivity implements LocationListener {
     }
 
     public void getCandidates(Location loc) {
-        List<String> stopCandidates = stopsDB.nearestStop(loc.getLatitude(),loc.getLongitude());
+        tripCandidates.clear();
+        List<String> stopCandidates = stopsDB.nearestStop(loc.getLatitude(), loc.getLongitude());
         for(String stopCandidate:stopCandidates) {
             List<String> tCandidates = stoptimesDB.getTripCandidates(stopCandidate,new GregorianCalendar());
             for(String tCandidate:tCandidates) {
@@ -197,6 +198,14 @@ public class StopTracker extends ActionBarActivity implements LocationListener {
                 tripCandidates.add(new RoutePath(waypoints,stopsDB.getStopLocation(stopCandidate),
                                                  tCandidate,tripsDB.getRoutes(tCandidate),stopCandidate));
             }
+        }
+//        initialPruneCandidates();
+    }
+
+    public void initialPruneCandidates(float bearing) {
+        for(RoutePath candidate:tripCandidates) {
+            if(!candidate.bearingInMargin(bearing))
+                tripCandidates.remove(candidate);
         }
     }
 }

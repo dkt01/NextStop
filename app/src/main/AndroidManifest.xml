@@ -90,6 +90,14 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="cjmaier2_dkturne2.nextstop.MainActivity" />
         </activity>
+        <activity
+            android:name=".CompassTest"
+            android:label="@string/title_activity_compass_test"
+            android:parentActivityName=".MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="cjmaier2_dkturne2.nextstop.MainActivity" />
+        </activity>
     </application>
 
 </manifest>

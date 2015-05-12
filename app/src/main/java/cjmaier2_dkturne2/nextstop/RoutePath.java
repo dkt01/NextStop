@@ -11,7 +11,8 @@ public class RoutePath {
     private List<Location> waypoints;
     private Location curPos;
     private int curPreIdx; // Stores index of waypoints before curPos
-    private final int MAXERROR = 1000; // Maximum correction of dead reckoning error in meters
+    private final int MAXERROR = 200; // Maximum correction of dead reckoning error in meters
+    private final float MAXBEARMARGIN = 45; // Maximum error in bearing before triggering error
     private final String tripID;
     private final String routeID;
     private String recentStop;
@@ -80,6 +81,10 @@ public class RoutePath {
         recentStop = stop;
     }
 
+    public float getBearing() {
+        return curPos.bearingTo(waypoints.get(curPreIdx+1));
+    }
+
     public Location moveAlongPath(float dist, float bearing) {
         float dist_left = dist;
         Location end_pos = new Location(curPos);
@@ -110,9 +115,9 @@ public class RoutePath {
         }
         dist_left = 0;
         i = curPreIdx;
-        /* Try to find where turn occured to reset the position */
+        /* Try to find where turn occurred to reset the position */
         while (Math.abs(dist_left - dist) < MAXERROR) {
-            if(Math.abs(waypoints.get(i).bearingTo(waypoints.get(i+1)) - bearing) < 40) {
+            if(bearingInMargin(waypoints.get(i).bearingTo(waypoints.get(i+1)),bearing)) {
                 if(i == curPreIdx) {
                     curPos = waypoints.get(i+1);
                     curPreIdx += 1;
@@ -132,5 +137,18 @@ public class RoutePath {
          * return null to indicate this may not be a good route candidate.
          */
         return null;
+    }
+
+    /* Bearings are within error if the absolute value of their difference is less than the
+     * error margin.  Second condition accounts for margins on either side of the +/- 180 border
+     * at due South.
+     */
+    private boolean bearingInMargin(float b1, float b2) {
+        return Math.abs(b1 - b2) <= MAXBEARMARGIN || Math.abs(Math.abs(b1 - b2) - 360) <= MAXBEARMARGIN;
+    }
+    public boolean bearingInMargin(float b1) {
+        float b2 = getBearing();
+        b2 = b2 < 0 ? b2 + 360 : b2; // getBearing has range [-180,180], compass is [0,360]
+        return Math.abs(b1 - b2) <= MAXBEARMARGIN || Math.abs(Math.abs(b1 - b2) - 360) <= MAXBEARMARGIN;
     }
 }
