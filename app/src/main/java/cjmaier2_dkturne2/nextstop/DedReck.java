@@ -34,6 +34,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 
@@ -92,6 +93,10 @@ public class DedReck extends ActionBarActivity implements SensorEventListener, L
     //dead reckoning variables
     private double time_prev = 0; //used for integration
     private float dt = 0;
+    private LinkedList<Float> a_x_data = new LinkedList<Float>();
+    private LinkedList<Float> a_y_data = new LinkedList<Float>();
+    private LinkedList<Float> a_z_data = new LinkedList<Float>();
+    private float a_x_off = 0, a_y_off = 0, a_z_off = 0; //offsets to reduce noise
     private float a_x_prev = 0, a_y_prev = 0, a_z_prev = 0;
     private float v_x = 0, v_y = 0, v_z = 0;
     private float v_x_prev = 0, v_y_prev = 0, v_z_prev = 0;
@@ -493,9 +498,24 @@ public class DedReck extends ActionBarActivity implements SensorEventListener, L
     private void getAccelerometer(SensorEvent event)
     {
         float[] values = event.values;
-        a_x = values[0]+0.02f; //readings seem to be offset
-        a_y = values[1]-0.176f;
-        a_z = values[2]-9.6f;
+
+        //keep track of first 5 accelerometer readings and average them for offset values
+        if(a_x_data.size() < 5) {
+            a_x_data.add(values[0]);
+            a_y_data.add(values[1]);
+            a_z_data.add(values[2]);
+            return;
+        }
+        else if(a_x_data.size() == 5) {
+            a_x_off = (a_x_data.get(0) + a_x_data.get(1) + a_x_data.get(2) + a_x_data.get(3) + a_x_data.get(4)) / 5.0f;
+            a_y_off = (a_y_data.get(0) + a_y_data.get(1) + a_y_data.get(2) + a_y_data.get(3) + a_y_data.get(4)) / 5.0f;
+            a_z_off = (a_z_data.get(0) + a_z_data.get(1) + a_z_data.get(2) + a_z_data.get(3) + a_z_data.get(4)) / 5.0f;
+            a_x_data.add(0.0f);
+        }
+
+        a_x = values[0]-a_x_off;
+        a_y = values[1]-a_y_off;
+        a_z = values[2]-a_z_off;
 
         //dead reckoning, with time in seconds
         dt = (new Double((event.timestamp - time_prev)/1000000000.0)).floatValue(); //double to float
