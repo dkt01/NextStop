@@ -60,8 +60,7 @@ public class CompassTest extends Activity implements SensorEventListener {
             SensorManager.getRotationMatrix(mR, null, mLastAccelerometer, mLastMagnetometer);
             SensorManager.getOrientation(mR, mOrientation);
             float azimuthInRadians = mOrientation[0];
-            float azimuthInDegress = (float)(Math.toDegrees(azimuthInRadians)+360)%360;
-            mCurrentDegree = azimuthInDegress;
+            mCurrentDegree = (float)(Math.toDegrees(azimuthInRadians)+360)%360;
             output.setText(Float.toString(mCurrentDegree));
             mLastAccelerometerSet = false;
             mLastMagnetometerSet = false;
