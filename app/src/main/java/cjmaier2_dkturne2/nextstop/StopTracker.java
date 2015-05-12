@@ -14,16 +14,19 @@ import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.List;
 
 public class StopTracker extends ActionBarActivity implements LocationListener, SensorEventListener {
 
     private List<BusStopData> busStops;
+    private final short MAXDRAWCARDS = 10;
     private RecyclerView rv;
 
     private LocationManager lManager;
@@ -71,6 +74,10 @@ public class StopTracker extends ActionBarActivity implements LocationListener, 
         initializeData();
         initializeAdapter();
 
+        tripCandidates = new ArrayList<>();
+        upcomingStopCandidates = new ArrayList<>();
+        upcomingStops = new ArrayList<>();
+
         guiHandler = new android.os.Handler();
         lManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
@@ -90,21 +97,24 @@ public class StopTracker extends ActionBarActivity implements LocationListener, 
         super.onResume();
         guiUpdate.run();
 
+        mSensorManager.registerListener(this, mAccel, 50000);
+        mSensorManager.registerListener(this, mMag, 200000);
+
         lManager.requestLocationUpdates(lManager.GPS_PROVIDER, 500, 1, this);
         Location loc = lManager.getLastKnownLocation(lManager.GPS_PROVIDER);
         if(loc != null)
         {
             lat = loc.getLatitude();
             lon = loc.getLongitude();
-            List<String> stops = stopsDB.nearestStop(lat,lon);
-            for(String stop:stops) {
-                addStop newstop = new addStop(stop,loc);
-                newstop.execute();
-            }
+//            List<String> stops = stopsDB.nearestStop(lat,lon);
+//            for(String stop:stops) {
+//                addStop newstop = new addStop(stop,loc);
+//                newstop.execute();
+//            }
+            getCandidates(loc);
+            updateUpcomingStops();
+            updateCards(loc);
         }
-
-        mSensorManager.registerListener(this, mAccel, 50000);
-        mSensorManager.registerListener(this, mMag, 200000);
     }
 
     @Override
@@ -200,9 +210,12 @@ public class StopTracker extends ActionBarActivity implements LocationListener, 
     }
 
     public void removeItem(BusStopData item) {
-        int position = busStops.indexOf(item);
-        busStops.remove(position);
-        rv.getAdapter().notifyItemRemoved(position);
+        removeItem(busStops.indexOf(item));
+    }
+
+    public void removeItem(int i) {
+        busStops.remove(i);
+        rv.getAdapter().notifyItemRemoved(i);
     }
 
     public void updateDistance(int index, int distance) {
@@ -238,10 +251,10 @@ public class StopTracker extends ActionBarActivity implements LocationListener, 
 
     // Returns list of route colors for a given stop
     public List<Route> getRoutesByStop(String stopID) {
-        return new ArrayList<>();
-//        List<String> trips = stoptimesDB.getTrips(stopID);
-//        List<String> routeIDs = tripsDB.getRoutes(trips);
-//        return routesDB.getRouteColors(routeIDs);
+//        return new ArrayList<>();
+        List<String> trips = stoptimesDB.getTrips(stopID);
+        List<String> routeIDs = tripsDB.getRoutes(trips);
+        return routesDB.getRouteColors(routeIDs);
     }
 
     public void getCandidates(Location loc) {
@@ -250,18 +263,31 @@ public class StopTracker extends ActionBarActivity implements LocationListener, 
         for(String stopCandidate:stopCandidates) {
             List<String> tCandidates = stoptimesDB.getTripCandidates(stopCandidate,new GregorianCalendar());
             for(String tCandidate:tCandidates) {
-                List<Location> waypoints = shapesDB.getWaypoints(tCandidate);
+                String shapeID = tripsDB.getShapeID(tCandidate);
+                List<Location> waypoints = shapesDB.getWaypoints(shapeID);
                 tripCandidates.add(new RoutePath(waypoints,stopsDB.getStopLocation(stopCandidate),
                                                  tCandidate,tripsDB.getRoutes(tCandidate),stopCandidate));
+                upcomingStopCandidates.add(stoptimesDB.getUpcomingStops(stopCandidate,tCandidate));
+                Log.i("NEXTSTOP","Added Candidate: "+tCandidate);
+                break;
             }
         }
         initialPruneCandidates(mBearing);
     }
 
     public void initialPruneCandidates(float bearing) {
+        List<Integer> deleteIndicies = new ArrayList<>();
         for(RoutePath candidate:tripCandidates) {
-            if(!candidate.bearingInMargin(bearing))
-                tripCandidates.remove(candidate);
+            if (!candidate.bearingInMargin(bearing))
+                Log.i("NEXTSTOP", "Pruned Candidate: " + candidate.getRouteID() + " b_mine: " +
+                        Float.toString(bearing) + " b_exp: " + Float.toString(candidate.getBearing()));
+        }
+        if(deleteIndicies.size() > 0) {
+            Collections.sort(deleteIndicies, Collections.reverseOrder());
+            for(Integer i: deleteIndicies) {
+                tripCandidates.remove(i);
+                upcomingStopCandidates.remove(i);
+            }
         }
     }
 
@@ -274,28 +300,99 @@ public class StopTracker extends ActionBarActivity implements LocationListener, 
                 upcomingStopCandidates.remove(idx);
                 tripCandidates.remove(idx);
             }
-            if(changed) {
-                updateUpcomingStops();
-            }
+        }
+        if(changed) {
+            updateUpcomingStops();
         }
     }
 
     public void updateUpcomingStops() {
+        upcomingStops.clear();
+        if(upcomingStopCandidates.size() == 0)
+            {}// Do Nothing
+        else if(upcomingStopCandidates.size() == 1) {
+            upcomingStops = upcomingStopCandidates.get(0);
+        }
+        else{
+            boolean areSame = true;
+            String testVal = null;
+            for(int i=0; i < upcomingStopCandidates.get(0).size(); i ++) {
+                testVal = null;
+                for(List<String> list:upcomingStopCandidates) {
+                    if(!areSame || list.size() <= i) {
+                        areSame = false;
+                        break;
+                    }
+                    if(testVal == null)
+                        testVal = list.get(i);
+                    else
+                        areSame = list.get(i) == testVal;
+                }
+                if(areSame)
+                    upcomingStops.add(upcomingStopCandidates.get(0).get(i));
+                else
+                    break;
+            }
+        }
+    }
 
+    public void updateCards(Location loc) {
+        if(busStops.size() < MAXDRAWCARDS && busStops.size() < upcomingStops.size())
+            for(int i = busStops.size(); i < MAXDRAWCARDS && i < upcomingStops.size(); i++) {
+                addStop newStop = new addStop(upcomingStops.get(i),tripCandidates.get(0));
+                newStop.execute();
+            }
+    }
+
+    public void updateDistances() {
+        List<Integer> deleteIndicies = new ArrayList<>();
+        for(BusStopData stop:busStops) {
+            int dist = (int)tripCandidates.get(0).distanceAlongRoute(stopsDB.getStopLocation(stop.stopID));
+            int index = busStops.indexOf(stop);
+            if(dist == -1)
+                deleteIndicies.add(index);
+            else
+                updateDistance(index,dist);
+        }
+        if(deleteIndicies.size() > 0) {
+            Collections.sort(deleteIndicies, Collections.reverseOrder());
+            for(Integer i: deleteIndicies) {
+                removeStop(i);
+            }
+        }
+    }
+
+    public void removeStop(int i) {
+        for(List l:upcomingStopCandidates)
+            l.remove(i);
+        upcomingStops.remove(i);
+        removeItem(i);
     }
 
     private class addStop extends AsyncTask<Void, Void, Void> {
         private final String stop;
-        private final Location loc;
+        private Location loc = null;
+        private RoutePath route = null;
 
         public addStop(String stop, Location loc) {
             this.stop = stop;
             this.loc = loc;
         }
 
+        public addStop(String stop, RoutePath route) {
+            this.stop = stop;
+            this.route = route;
+        }
+
         protected Void doInBackground(Void... params) {
-            addItem(new BusStopData(stopsDB.getStopName(stop), stop, getRoutesByStop(stop),
-                                    (int)stopsDB.getDist2Stop(stop,loc.getLatitude(),loc.getLongitude())));
+            if(route == null)
+                addItem(new BusStopData(stopsDB.getStopName(stop), stop, getRoutesByStop(stop),
+                                        (int)stopsDB.getDist2Stop(stop,loc.getLatitude(),loc.getLongitude())));
+            else {
+                Location endpoint = stopsDB.getStopLocation(stop);
+                int dist = (int)route.distanceAlongRoute(endpoint);
+                addItem(new BusStopData(stopsDB.getStopName(stop), stop, getRoutesByStop(stop), dist));
+            }
             return null;
         }
     }

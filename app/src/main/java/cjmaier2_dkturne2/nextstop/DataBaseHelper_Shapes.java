@@ -161,7 +161,7 @@ public class DataBaseHelper_Shapes extends SQLiteOpenHelper {
     public List<Location> getWaypoints(String shape_id) {
         List<Location> retval = new ArrayList();
         Cursor c = myDataBase.rawQuery("select * from "+TABLE_NAME+" where shape_id='"+shape_id+"' ORDER BY shape_pt_sequence ASC",null);
-        if(c.moveToFirst())
+        while (c.moveToNext())
         {
             Location loc = new Location("");
             loc.setLatitude(c.getDouble(1));
