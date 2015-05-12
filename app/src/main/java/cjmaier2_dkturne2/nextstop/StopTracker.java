@@ -1,6 +1,10 @@
 package cjmaier2_dkturne2.nextstop;
 
 import android.content.Context;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -16,12 +20,23 @@ import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-public class StopTracker extends ActionBarActivity implements LocationListener {
+public class StopTracker extends ActionBarActivity implements LocationListener, SensorEventListener {
 
     private List<BusStopData> busStops;
     private RecyclerView rv;
 
     private LocationManager lManager;
+    private SensorManager mSensorManager;
+    private Sensor mAccel;
+    private Sensor mMag;
+
+    private float[] mLastAccelerometer = new float[3];
+    private float[] mLastMagnetometer = new float[3];
+    private boolean mLastAccelerometerSet = false;
+    private boolean mLastMagnetometerSet = false;
+    private float[] mR = new float[9];
+    private float[] mOrientation = new float[3];
+    private float mBearing = 0f;
     private double lat = 0;
     private double lon = 0;
 
@@ -61,6 +76,10 @@ public class StopTracker extends ActionBarActivity implements LocationListener {
         stopsDB = new DataBaseHelper_Stops(this.getApplicationContext());
         stoptimesDB = new DataBaseHelper_StopTimes(this.getApplicationContext());
         tripsDB = new DataBaseHelper_Trips(this.getApplicationContext());
+
+        mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
+        mAccel = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        mMag = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
     }
 
     @Override
@@ -75,6 +94,9 @@ public class StopTracker extends ActionBarActivity implements LocationListener {
             lat = loc.getLatitude();
             lon = loc.getLongitude();
         }
+
+        mSensorManager.registerListener(this, mAccel, 50000);
+        mSensorManager.registerListener(this, mMag, 200000);
     }
 
     @Override
@@ -82,6 +104,7 @@ public class StopTracker extends ActionBarActivity implements LocationListener {
         super.onPause();
         guiHandler.removeCallbacks(guiUpdate);
         lManager.removeUpdates(this);
+        mSensorManager.unregisterListener(this);
     }
 
     @Override
@@ -124,6 +147,29 @@ public class StopTracker extends ActionBarActivity implements LocationListener {
 
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        if (event.sensor == mAccel) {
+            System.arraycopy(event.values, 0, mLastAccelerometer, 0, event.values.length);
+            mLastAccelerometerSet = true;
+        } else if (event.sensor == mMag) {
+            System.arraycopy(event.values, 0, mLastMagnetometer, 0, event.values.length);
+            mLastMagnetometerSet = true;
+        }
+        if (mLastAccelerometerSet && mLastMagnetometerSet) {
+            SensorManager.getRotationMatrix(mR, null, mLastAccelerometer, mLastMagnetometer);
+            SensorManager.getOrientation(mR, mOrientation);
+            float azimuthInRadians = mOrientation[0];
+            mBearing = (float)(Math.toDegrees(azimuthInRadians)+360)%360;
+            mLastAccelerometerSet = false;
+            mLastMagnetometerSet = false;
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
     }
 
     private void initializeData(){
@@ -199,7 +245,7 @@ public class StopTracker extends ActionBarActivity implements LocationListener {
                                                  tCandidate,tripsDB.getRoutes(tCandidate),stopCandidate));
             }
         }
-//        initialPruneCandidates();
+        initialPruneCandidates(mBearing);
     }
 
     public void initialPruneCandidates(float bearing) {
