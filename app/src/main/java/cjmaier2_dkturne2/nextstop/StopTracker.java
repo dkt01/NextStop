@@ -52,6 +52,8 @@ public class StopTracker extends ActionBarActivity implements LocationListener, 
     private DataBaseHelper_Trips tripsDB;
 
     private List<RoutePath> tripCandidates;
+    private List<List<String>> upcomingStopCandidates;
+    private List<String> upcomingStops;
 
 
     @Override
@@ -236,9 +238,10 @@ public class StopTracker extends ActionBarActivity implements LocationListener, 
 
     // Returns list of route colors for a given stop
     public List<Route> getRoutesByStop(String stopID) {
-        List<String> trips = stoptimesDB.getTrips(stopID);
-        List<String> routeIDs = tripsDB.getRoutes(trips);
-        return routesDB.getRouteColors(routeIDs);
+        return new ArrayList<>();
+//        List<String> trips = stoptimesDB.getTrips(stopID);
+//        List<String> routeIDs = tripsDB.getRoutes(trips);
+//        return routesDB.getRouteColors(routeIDs);
     }
 
     public void getCandidates(Location loc) {
@@ -260,6 +263,25 @@ public class StopTracker extends ActionBarActivity implements LocationListener, 
             if(!candidate.bearingInMargin(bearing))
                 tripCandidates.remove(candidate);
         }
+    }
+
+    public void moveAlongPath(float dist, float bearing) {
+        boolean changed = false;
+        for(RoutePath candidate:tripCandidates) {
+            if(candidate.moveAlongPath(dist,bearing) == null) {
+                changed = true;
+                int idx = tripCandidates.indexOf(candidate);
+                upcomingStopCandidates.remove(idx);
+                tripCandidates.remove(idx);
+            }
+            if(changed) {
+                updateUpcomingStops();
+            }
+        }
+    }
+
+    public void updateUpcomingStops() {
+
     }
 
     private class addStop extends AsyncTask<Void, Void, Void> {
