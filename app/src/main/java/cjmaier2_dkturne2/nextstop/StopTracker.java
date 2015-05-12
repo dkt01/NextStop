@@ -8,6 +8,7 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -93,6 +94,11 @@ public class StopTracker extends ActionBarActivity implements LocationListener, 
         {
             lat = loc.getLatitude();
             lon = loc.getLongitude();
+            List<String> stops = stopsDB.nearestStop(lat,lon);
+            for(String stop:stops) {
+                addStop newstop = new addStop(stop,loc);
+                newstop.execute();
+            }
         }
 
         mSensorManager.registerListener(this, mAccel, 50000);
@@ -135,7 +141,8 @@ public class StopTracker extends ActionBarActivity implements LocationListener, 
         lon = location.getLongitude();
         List<String> stops = stopsDB.nearestStop(lat,lon);
         for(String stop:stops) {
-            addItem(new BusStopData(stopsDB.getStopName(stop), stop, getRoutesByStop(stop), (int)stopsDB.getDist2Stop(stop,lat,lon)));
+            addStop newstop = new addStop(stop,location);
+            newstop.execute();
         }
     }
 
@@ -252,6 +259,22 @@ public class StopTracker extends ActionBarActivity implements LocationListener, 
         for(RoutePath candidate:tripCandidates) {
             if(!candidate.bearingInMargin(bearing))
                 tripCandidates.remove(candidate);
+        }
+    }
+
+    private class addStop extends AsyncTask<Void, Void, Void> {
+        private final String stop;
+        private final Location loc;
+
+        public addStop(String stop, Location loc) {
+            this.stop = stop;
+            this.loc = loc;
+        }
+
+        protected Void doInBackground(Void... params) {
+            addItem(new BusStopData(stopsDB.getStopName(stop), stop, getRoutesByStop(stop),
+                                    (int)stopsDB.getDist2Stop(stop,loc.getLatitude(),loc.getLongitude())));
+            return null;
         }
     }
 }

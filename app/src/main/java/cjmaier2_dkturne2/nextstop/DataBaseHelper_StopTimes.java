@@ -162,14 +162,14 @@ public class DataBaseHelper_StopTimes extends SQLiteOpenHelper {
     }
 
     public List<String> getTrips(String stopID) {
-        HashSet<String> retval = new HashSet<>();
-        Cursor c = myDataBase.rawQuery("select * from "+TABLE_NAME+" where stop_id='"+stopID+"'",null);
+        List<String> retval = new ArrayList<>();
+        Cursor c = myDataBase.rawQuery("select distinct trip_id from "+TABLE_NAME+" where stop_id='"+stopID+"'",null);
         while (c.moveToNext())
         {
             retval.add(c.getString(0));
         }
         c.close();
-        return new ArrayList<>(retval);
+        return retval;
     }
 
     public List<String> getTripCandidates(String stopID, GregorianCalendar now) {

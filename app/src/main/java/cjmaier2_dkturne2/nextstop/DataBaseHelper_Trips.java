@@ -160,16 +160,16 @@ public class DataBaseHelper_Trips extends SQLiteOpenHelper {
     }
 
     public List<String> getRoutes(List<String> trips) {
-        HashSet<String> retval = new HashSet<>();
+        List<String> retval = new ArrayList<>();
         for(String trip:trips) {
-            Cursor c = myDataBase.rawQuery("select * from "+TABLE_NAME+" where trip_id='"+trip+"'",null);
+            Cursor c = myDataBase.rawQuery("select distinct route_id from "+TABLE_NAME+" where trip_id='"+trip+"'",null);
             if(c.moveToFirst())
             {
-                retval.add(c.getString(1));
+                retval.add(c.getString(0));
             }
             c.close();
         }
-        return new ArrayList<>(retval);
+        return retval;
     }
 
     public String getRoutes(String trip) {
