@@ -2,9 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/NextStop.iml" filepath="$PROJECT_DIR$/NextStop.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/nextstop.iml" filepath="$PROJECT_DIR$/nextstop.iml" />
+      <module fileurl="file://$PROJECT_DIR$/nextstop.iml" filepath="$PROJECT_DIR$/nextstop.iml" />
     </modules>
   </component>
 </project>
-

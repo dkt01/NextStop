@@ -90,6 +90,12 @@ public class MainActivity extends ActionBarActivity {
         startActivity(intent);
     }
 
+    public void launchDedReck(View view)
+    {
+        Intent intent = new Intent(this, DedReck.class);
+        startActivity(intent);
+    }
+
     public void launchDropboxSetup(View view)
     {
         Intent intent = new Intent(this, DropboxSetup.class);

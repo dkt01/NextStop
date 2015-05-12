@@ -40,7 +40,7 @@ import java.util.Locale;
 //below for CSV
 
 
-public class Logger extends ActionBarActivity implements SensorEventListener, LocationListener {
+public class DedReck extends ActionBarActivity implements SensorEventListener, LocationListener {
 
     private final int capture_speed = 0;
     //0: DELAY_FASTEST
@@ -70,6 +70,7 @@ public class Logger extends ActionBarActivity implements SensorEventListener, Lo
 
     private double start_time; //reference for time_elapsed
     private boolean time_elapsed_started = false; //to determine starting timestamp
+    private int dedreck_itr = 0; //need 2 readings for velocity, 3 readings for position
     private double time_elapsed = 0;
     private boolean writer_created = false; //to determine whether to write to csv
     private BufferedWriter writer;
@@ -87,6 +88,14 @@ public class Logger extends ActionBarActivity implements SensorEventListener, Lo
     private float m_z = 0;
     private double lat = 0;
     private double lon = 0;
+
+    //dead reckoning variables
+    private double time_prev = 0; //used for integration
+    private float dt = 0;
+    private float a_x_prev = 0, a_y_prev = 0, a_z_prev = 0;
+    private float v_x = 0, v_y = 0, v_z = 0;
+    private float v_x_prev = 0, v_y_prev = 0, v_z_prev = 0;
+    private float p_x = 0, p_y = 0, p_z = 0;
 
     File textFile = null;
 
@@ -332,6 +341,7 @@ public class Logger extends ActionBarActivity implements SensorEventListener, Lo
             time_elapsed_started = true;
             start_time = event.timestamp;
         }
+
         time_elapsed = (event.timestamp - start_time)/1000000.0;
 
         if(ACCEL_ENABLED)
@@ -475,6 +485,35 @@ public class Logger extends ActionBarActivity implements SensorEventListener, Lo
         a_y = values[1];
         a_z = values[2];
 
+        //dead reckoning
+        dt = (new Double(event.timestamp - time_prev)).floatValue(); //double to float
+        if (dedreck_itr == 0) {
+            dedreck_itr = 1;
+        }
+        else if (dedreck_itr == 1) { //enough readings to get velocity
+            dedreck_itr = 2;
+            v_x = (a_x - a_x_prev)*dt;
+            v_y = (a_y - a_y_prev)*dt;
+            v_z = (a_z - a_z_prev)*dt;
+        }
+        else { //enough readings to get velocity and position
+            v_x = (a_x - a_x_prev)*dt;
+            v_y = (a_y - a_y_prev)*dt;
+            v_z = (a_z - a_z_prev)*dt;
+            p_x += (v_x - v_x_prev)*dt;
+            p_y += (v_y - v_y_prev)*dt;
+            p_z += (v_z - v_z_prev)*dt;
+        }
+
+        time_prev = event.timestamp;
+        a_x_prev = a_x;
+        a_y_prev = a_y;
+        a_z_prev = a_z;
+        v_x_prev = v_x;
+        v_y_prev = v_y;
+        v_z_prev = v_z;
+
+        //writing to CSV
         if(writer_created) {
             String newentry = String.valueOf(time_elapsed) + "," + Float.toString(a_x) + "," + Float.toString(a_y) + "," + Float.toString(a_z) + ","
                     + Float.toString(g_x) + "," + Float.toString(g_y) + "," + Float.toString(g_z) + ","
