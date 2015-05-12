@@ -104,13 +104,13 @@ public class DedReck extends ActionBarActivity implements SensorEventListener, L
     private String wfilename;
 
     private android.os.Handler guiHandler;
-    private int guiInterval = 1000; // 1000 mS
+    private int guiInterval = 100; // 1000 mS
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         guiHandler = new android.os.Handler();
-        setContentView(R.layout.activity_logger);
+        setContentView(R.layout.activity_ded_reck);
         TextView testText = (TextView)findViewById(R.id.testText);
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         lManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -274,7 +274,7 @@ public class DedReck extends ActionBarActivity implements SensorEventListener, L
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_logger, menu);
+        getMenuInflater().inflate(R.menu.menu_ded_reck, menu);
         return true;
     }
 
@@ -304,6 +304,12 @@ public class DedReck extends ActionBarActivity implements SensorEventListener, L
             EditText gxval = (EditText)findViewById(R.id.axisxgyro);
             EditText gyval = (EditText)findViewById(R.id.axisygyro);
             EditText gzval = (EditText)findViewById(R.id.axiszgyro);
+            EditText vxval = (EditText)findViewById(R.id.axisxvel);
+            EditText vyval = (EditText)findViewById(R.id.axisyvel);
+            EditText vzval = (EditText)findViewById(R.id.axiszvel);
+            EditText pxval = (EditText)findViewById(R.id.axisxpos);
+            EditText pyval = (EditText)findViewById(R.id.axisypos);
+            EditText pzval = (EditText)findViewById(R.id.axiszpos);
             EditText mxval = (EditText)findViewById(R.id.axisxmag);
             EditText myval = (EditText)findViewById(R.id.axisymag);
             EditText mzval = (EditText)findViewById(R.id.axiszmag);
@@ -315,11 +321,17 @@ public class DedReck extends ActionBarActivity implements SensorEventListener, L
                 axval.setText(Float.toString(a_x));
                 ayval.setText(Float.toString(a_y));
                 azval.setText(Float.toString(a_z));
+                vxval.setText(Float.toString(v_x));
+                vyval.setText(Float.toString(v_y));
+                vzval.setText(Float.toString(v_z));
+                pxval.setText(Float.toString(p_x));
+                pyval.setText(Float.toString(p_y));
+                pzval.setText(Float.toString(p_z));
             }
             if(GYRO_ENABLED) {
-                gxval.setText(Float.toString(g_x));
-                gyval.setText(Float.toString(g_y));
-                gzval.setText(Float.toString(g_z));
+//                gxval.setText(Float.toString(g_x));
+//                gyval.setText(Float.toString(g_y));
+//                gzval.setText(Float.toString(g_z));
             }
             if(MAG_ENABLED) {
                 mxval.setText(Float.toString(m_x));
@@ -481,12 +493,13 @@ public class DedReck extends ActionBarActivity implements SensorEventListener, L
     private void getAccelerometer(SensorEvent event)
     {
         float[] values = event.values;
-        a_x = values[0];
-        a_y = values[1];
-        a_z = values[2];
+        a_x = values[0]+0.02f; //readings seem to be offset
+        a_y = values[1]-0.176f;
+        a_z = values[2]-9.6f;
 
-        //dead reckoning
-        dt = (new Double(event.timestamp - time_prev)).floatValue(); //double to float
+        //dead reckoning, with time in seconds
+        dt = (new Double((event.timestamp - time_prev)/1000000000.0)).floatValue(); //double to float
+
         if (dedreck_itr == 0) {
             dedreck_itr = 1;
         }
@@ -496,13 +509,22 @@ public class DedReck extends ActionBarActivity implements SensorEventListener, L
             v_y = (a_y - a_y_prev)*dt;
             v_z = (a_z - a_z_prev)*dt;
         }
-        else { //enough readings to get velocity and position
-            v_x = (a_x - a_x_prev)*dt;
-            v_y = (a_y - a_y_prev)*dt;
-            v_z = (a_z - a_z_prev)*dt;
-            p_x += (v_x - v_x_prev)*dt;
-            p_y += (v_y - v_y_prev)*dt;
-            p_z += (v_z - v_z_prev)*dt;
+        else if (dedreck_itr == 2){ //enough readings to get velocity and position
+            dedreck_itr = 3;
+            if(Math.abs(a_x - a_x_prev) > 0.1) v_x = (a_x - a_x_prev)*dt;
+            if(Math.abs(a_y - a_y_prev) > 0.1) v_y = (a_y - a_y_prev)*dt;
+            if(Math.abs(a_z - a_z_prev) > 0.1) v_z = (a_z - a_z_prev)*dt;
+            if(Math.abs(a_x - a_x_prev) > 0.1) p_x += (v_x - v_x_prev)*dt;
+            if(Math.abs(a_y - a_y_prev) > 0.1) p_y += (v_y - v_y_prev)*dt;
+            if(Math.abs(a_z - a_z_prev) > 0.1) p_z += (v_z - v_z_prev)*dt;
+        }
+        else {
+            if(Math.abs(a_x - a_x_prev) > 0.1) v_x += a_x*dt;
+            if(Math.abs(a_y - a_y_prev) > 0.1) v_y += a_y*dt;
+            if(Math.abs(a_z - a_z_prev) > 0.1) v_z += a_z*dt;
+            if(Math.abs(a_x - a_x_prev) > 0.1) p_x += v_x*dt + 0.5f*a_x*dt*dt;
+            if(Math.abs(a_y - a_y_prev) > 0.1) p_y += v_y*dt + 0.5f*a_y*dt*dt;
+            if(Math.abs(a_z - a_z_prev) > 0.1) p_z += v_z*dt + 0.5f*a_z*dt*dt;
         }
 
         time_prev = event.timestamp;

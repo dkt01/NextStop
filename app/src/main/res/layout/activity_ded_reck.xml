@@ -99,7 +99,7 @@
                 android:layout_height="wrap_content"
                 android:inputType="numberDecimal"
                 android:ems="10"
-                android:id="@+id/axisxgyro"
+                android:id="@+id/axisxvel"
                 android:focusable="false"
                 android:layout_below="@+id/axiszaccel"
                 android:layout_alignLeft="@+id/axiszaccel"
@@ -110,52 +110,115 @@
                 android:layout_height="wrap_content"
                 android:inputType="numberDecimal"
                 android:ems="10"
-                android:id="@+id/axisygyro"
+                android:id="@+id/axisyvel"
                 android:focusable="false"
-                android:layout_below="@+id/axisxgyro"
-                android:layout_alignLeft="@+id/axisxgyro"
-                android:layout_alignRight="@+id/axisxgyro" />
+                android:layout_below="@+id/axisxvel"
+                android:layout_alignLeft="@+id/axisxvel"
+                android:layout_alignRight="@+id/axisxvel" />
 
             <EditText
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:inputType="numberDecimal"
                 android:ems="10"
-                android:id="@+id/axiszgyro"
+                android:id="@+id/axiszvel"
                 android:focusable="false"
-                android:layout_below="@+id/axisygyro"
-                android:layout_alignLeft="@+id/axisygyro"
-                android:layout_alignRight="@+id/axisygyro" />
+                android:layout_below="@+id/axisyvel"
+                android:layout_alignLeft="@+id/axisyvel"
+                android:layout_alignRight="@+id/axisyvel" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="GYROX"
-                android:id="@+id/gyroxlabel"
-                android:layout_toEndOf="@+id/axisxgyro"
-                android:layout_toRightOf="@id/axisxgyro"
-                android:layout_alignBottom="@+id/axisxgyro" />
+                android:text="VELX"
+                android:id="@+id/velxlabel"
+                android:layout_toEndOf="@+id/axisxvel"
+                android:layout_toRightOf="@id/axisxvel"
+                android:layout_alignBottom="@+id/axisxvel" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="GYROY"
-                android:id="@+id/gyroylabel"
-                android:layout_toEndOf="@+id/axisygyro"
-                android:layout_toRightOf="@id/axisygyro"
-                android:layout_alignBottom="@+id/axisygyro" />
+                android:text="VELY"
+                android:id="@+id/velylabel"
+                android:layout_toEndOf="@+id/axisyvel"
+                android:layout_toRightOf="@id/axisyvel"
+                android:layout_alignBottom="@+id/axisyvel" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="GYROZ"
-                android:id="@+id/gyrozlabel"
-                android:layout_toEndOf="@+id/axiszgyro"
-                android:layout_toRightOf="@id/axiszgyro"
-                android:layout_alignBottom="@+id/axiszgyro" />
+                android:text="VELZ"
+                android:id="@+id/velzlabel"
+                android:layout_toEndOf="@+id/axiszvel"
+                android:layout_toRightOf="@id/axiszvel"
+                android:layout_alignBottom="@+id/axiszvel" />
+
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal"
+                android:ems="10"
+                android:id="@+id/axisxpos"
+                android:focusable="false"
+                android:layout_below="@+id/axiszvel"
+                android:layout_alignLeft="@+id/axiszvel"
+                android:layout_alignRight="@+id/axiszvel" />
+
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal"
+                android:ems="10"
+                android:id="@+id/axisypos"
+                android:focusable="false"
+                android:layout_below="@+id/axisxpos"
+                android:layout_alignLeft="@+id/axisxpos"
+                android:layout_alignRight="@+id/axisxpos" />
+
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal"
+                android:ems="10"
+                android:id="@+id/axiszpos"
+                android:focusable="false"
+                android:layout_below="@+id/axisypos"
+                android:layout_alignLeft="@+id/axisypos"
+                android:layout_alignRight="@+id/axisypos" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="POSX"
+                android:id="@+id/posxlabel"
+                android:layout_toEndOf="@+id/axisxpos"
+                android:layout_toRightOf="@id/axisxpos"
+                android:layout_alignBottom="@+id/axisxpos" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="POSY"
+                android:id="@+id/posylabel"
+                android:layout_toEndOf="@+id/axisypos"
+                android:layout_toRightOf="@id/axisypos"
+                android:layout_alignBottom="@+id/axisypos" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="POSZ"
+                android:id="@+id/poszlabel"
+                android:layout_toEndOf="@+id/axiszpos"
+                android:layout_toRightOf="@id/axiszpos"
+                android:layout_alignBottom="@+id/axiszpos" />
 
             <EditText
                 android:layout_width="wrap_content"
@@ -197,9 +260,9 @@
                 android:ems="10"
                 android:id="@+id/axisxmag"
                 android:focusable="false"
-                android:layout_below="@+id/axiszgyro"
-                android:layout_alignLeft="@+id/axiszgyro"
-                android:layout_alignRight="@+id/axiszgyro" />
+                android:layout_below="@+id/axiszpos"
+                android:layout_alignLeft="@+id/axiszpos"
+                android:layout_alignRight="@+id/axiszpos" />
 
             <EditText
                 android:layout_width="wrap_content"
