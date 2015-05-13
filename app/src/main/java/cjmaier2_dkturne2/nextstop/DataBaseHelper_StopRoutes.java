@@ -11,19 +11,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
 
-public class DataBaseHelper_StopTimes extends SQLiteOpenHelper {
+public class DataBaseHelper_StopRoutes extends SQLiteOpenHelper {
 
-    private static String DB_NAME = "stop_times.sqlite";
+    private static String DB_NAME = "stop_routes.sqlite";
     private String DB_PATH;
 
-    private final String TABLE_NAME = "stop_times";
+    private final String TABLE_NAME = "stop_routes";
 
     private SQLiteDatabase myDataBase;
 
@@ -33,7 +30,7 @@ public class DataBaseHelper_StopTimes extends SQLiteOpenHelper {
      * Constructor
      * Takes and keeps a reference of the passed context in order to access to the application assets and resources.
      */
-    public DataBaseHelper_StopTimes(Context context) {
+    public DataBaseHelper_StopRoutes(Context context) {
 
         super(context, DB_NAME, null, 1);
         this.myContext = context;
@@ -161,50 +158,12 @@ public class DataBaseHelper_StopTimes extends SQLiteOpenHelper {
 
     }
 
-    public List<String> getTrips(String stopID) {
+    public List<String> getRoutes(String stopID) {
         List<String> retval = new ArrayList<>();
-        Cursor c = myDataBase.rawQuery("select distinct trip_id from "+TABLE_NAME+" where stop_id='"+stopID+"'",null);
+        Cursor c = myDataBase.rawQuery("SELECT route_id FROM "+TABLE_NAME+" WHERE stop_id='"+stopID+"'",null);
         while (c.moveToNext())
         {
             retval.add(c.getString(0));
-        }
-        c.close();
-        return retval;
-    }
-
-    public List<String> getTripCandidates(String stopID, GregorianCalendar now) {
-        SimpleDateFormat outFormat = new SimpleDateFormat("HH:mm:ss");
-        ArrayList<String> retval = new ArrayList();
-        now.add(Calendar.MINUTE,-5);
-        String preVal = outFormat.format(now.getTime());
-        now.add(Calendar.MINUTE,10);
-        String postVal = outFormat.format(now.getTime());
-        Cursor c = myDataBase.rawQuery("SELECT * FROM "+TABLE_NAME+" WHERE stop_id='"+stopID+"' " +
-                                       "AND strftime( '%H:%M:%S', departure_time ) >= strftime( '%H:%M:%S', '"+preVal+"' ) " +
-                                       "AND strftime( '%H:%M:%S', departure_time ) <= strftime( '%H:%M:%S', '"+postVal+"' ) ",null);
-        while (c.moveToNext())
-        {
-            retval.add(c.getString(0));
-        }
-        c.close();
-        return retval;
-    }
-
-    public List<String> getUpcomingStops(String stopID, String tripID) {
-        ArrayList<String> retval = new ArrayList();
-        // Get trip sequence number first
-        Cursor c = myDataBase.rawQuery("SELECT * FROM "+TABLE_NAME+" WHERE stop_id='"+stopID+"' " +
-                                       "AND trip_id='"+tripID+"'",null);
-        if(c.moveToFirst())
-        {
-            int seqnum = c.getInt(4);
-            Cursor d = myDataBase.rawQuery("SELECT * FROM "+TABLE_NAME+" WHERE trip_id='"+tripID+"' " +
-                    "AND stop_sequence>"+Integer.toString(seqnum)+" ORDER BY stop_sequence ASC",null);
-            while (d.moveToNext())
-            {
-                retval.add(d.getString(3));
-            }
-            d.close();
         }
         c.close();
         return retval;

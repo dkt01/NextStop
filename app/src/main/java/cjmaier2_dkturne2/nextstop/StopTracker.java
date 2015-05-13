@@ -53,6 +53,7 @@ public class StopTracker extends ActionBarActivity implements LocationListener, 
     private DataBaseHelper_Stops stopsDB;
     private DataBaseHelper_StopTimes stoptimesDB;
     private DataBaseHelper_Trips tripsDB;
+    private DataBaseHelper_StopRoutes stoproutesDB;
 
     private List<RoutePath> tripCandidates;
     private List<List<String>> upcomingStopCandidates;
@@ -86,6 +87,7 @@ public class StopTracker extends ActionBarActivity implements LocationListener, 
         stopsDB = new DataBaseHelper_Stops(this.getApplicationContext());
         stoptimesDB = new DataBaseHelper_StopTimes(this.getApplicationContext());
         tripsDB = new DataBaseHelper_Trips(this.getApplicationContext());
+        stoproutesDB = new DataBaseHelper_StopRoutes(this.getApplicationContext());
 
         mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
         mAccel = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -106,11 +108,6 @@ public class StopTracker extends ActionBarActivity implements LocationListener, 
         {
             lat = loc.getLatitude();
             lon = loc.getLongitude();
-//            List<String> stops = stopsDB.nearestStop(lat,lon);
-//            for(String stop:stops) {
-//                addStop newstop = new addStop(stop,loc);
-//                newstop.execute();
-//            }
             getCandidates(loc);
             updateUpcomingStops();
             updateCards(loc);
@@ -151,11 +148,6 @@ public class StopTracker extends ActionBarActivity implements LocationListener, 
     public void onLocationChanged(Location location) {
         lat = location.getLatitude();
         lon = location.getLongitude();
-        List<String> stops = stopsDB.nearestStop(lat,lon);
-        for(String stop:stops) {
-            addStop newstop = new addStop(stop,location);
-            newstop.execute();
-        }
     }
 
     @Override
@@ -231,29 +223,12 @@ public class StopTracker extends ActionBarActivity implements LocationListener, 
         @Override
         public void run() {
             guiHandler.postDelayed(guiUpdate, guiInterval);
-//            if(create)
-//            {
-//                Random r = new Random();
-//                ArrayList<Route> routes = new ArrayList<Route>();
-//                for(int i = 0; i <= r.nextInt(9); i++)
-//                {
-//                    routes.add(Route.values()[r.nextInt(Route.values().length)]);
-//                }
-//                addItem(new BusStopData("Wright & Chalmers", (ArrayList<Route>) routes.clone(), r.nextInt(500)));
-//            }
-//            else
-//            {
-//                removeItem(busStops.get(0));
-//            }
-//            create = !create;
         }
     };
 
     // Returns list of route colors for a given stop
     public List<Route> getRoutesByStop(String stopID) {
-//        return new ArrayList<>();
-        List<String> trips = stoptimesDB.getTrips(stopID);
-        List<String> routeIDs = tripsDB.getRoutes(trips);
+        List<String> routeIDs = stoproutesDB.getRoutes(stopID);
         return routesDB.getRouteColors(routeIDs);
     }
 
@@ -268,8 +243,7 @@ public class StopTracker extends ActionBarActivity implements LocationListener, 
                 tripCandidates.add(new RoutePath(waypoints,stopsDB.getStopLocation(stopCandidate),
                                                  tCandidate,tripsDB.getRoutes(tCandidate),stopCandidate));
                 upcomingStopCandidates.add(stoptimesDB.getUpcomingStops(stopCandidate,tCandidate));
-                Log.i("NEXTSTOP","Added Candidate: "+tCandidate);
-                break;
+                Log.i("NEXTSTOP", "Added Candidate: " + tCandidate);
             }
         }
         initialPruneCandidates(mBearing);
