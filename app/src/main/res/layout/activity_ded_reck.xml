@@ -22,7 +22,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceLarge"
-                android:text="Data Logger"
+                android:text="Dead Reckoning"
                 android:id="@+id/acceltesttitle"
                 android:layout_alignParentTop="true"
                 android:layout_centerHorizontal="true" />
@@ -190,6 +190,17 @@
                 android:layout_alignLeft="@+id/axisypos"
                 android:layout_alignRight="@+id/axisypos" />
 
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal"
+                android:ems="10"
+                android:id="@+id/axispos"
+                android:focusable="false"
+                android:layout_below="@+id/axiszpos"
+                android:layout_alignLeft="@+id/axiszpos"
+                android:layout_alignRight="@+id/axiszpos" />
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -219,6 +230,16 @@
                 android:layout_toEndOf="@+id/axiszpos"
                 android:layout_toRightOf="@id/axiszpos"
                 android:layout_alignBottom="@+id/axiszpos" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="POS"
+                android:id="@+id/poslabel"
+                android:layout_toEndOf="@+id/axispos"
+                android:layout_toRightOf="@id/axispos"
+                android:layout_alignBottom="@+id/axispos" />
 
             <EditText
                 android:layout_width="wrap_content"
@@ -260,7 +281,7 @@
                 android:ems="10"
                 android:id="@+id/axisxmag"
                 android:focusable="false"
-                android:layout_below="@+id/axiszpos"
+                android:layout_below="@+id/axispos"
                 android:layout_alignLeft="@+id/axiszpos"
                 android:layout_alignRight="@+id/axiszpos" />
 

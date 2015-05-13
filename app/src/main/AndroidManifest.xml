@@ -128,7 +128,8 @@
         <activity
             android:name=".DedReck"
             android:label="@string/title_activity_ded_reck"
-            android:parentActivityName=".MainActivity" >
+            android:parentActivityName=".MainActivity"
+            android:screenOrientation="portrait" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="cjmaier2_dkturne2.nextstop.MainActivity" />

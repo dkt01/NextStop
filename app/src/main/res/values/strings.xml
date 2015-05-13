@@ -13,5 +13,5 @@
     <string name="title_activity_step_count">StepCount</string>
     <string name="title_activity_mic_test">MicTest</string>
     <string name="title_activity_stop_tracker">StopTracker</string>
-    <string name="title_activity_ded_reck">DedReck</string>
+    <string name="title_activity_ded_reck">Dead Reckoning</string>
 </resources>

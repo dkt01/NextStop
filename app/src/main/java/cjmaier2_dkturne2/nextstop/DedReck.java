@@ -48,7 +48,7 @@ public class DedReck extends ActionBarActivity implements SensorEventListener, L
     //1: DELAY_GAME
     //3: DELAY_NORMAL
     //2: DELAY_UI
-    private final int UPDATE_RATE = 2;
+    private final int UPDATE_RATE = 0;
 
     private boolean ACCEL_ENABLED = false;
     private boolean GYRO_ENABLED = false;
@@ -68,6 +68,7 @@ public class DedReck extends ActionBarActivity implements SensorEventListener, L
     private Sensor mAccel;
     private Sensor mGyro;
     private Sensor mMag;
+    private Sensor mGrav;
 
     private double start_time; //reference for time_elapsed
     private boolean time_elapsed_started = false; //to determine starting timestamp
@@ -100,7 +101,8 @@ public class DedReck extends ActionBarActivity implements SensorEventListener, L
     private float a_x_prev = 0, a_y_prev = 0, a_z_prev = 0;
     private float v_x = 0, v_y = 0, v_z = 0;
     private float v_x_prev = 0, v_y_prev = 0, v_z_prev = 0;
-    private float p_x = 0, p_y = 0, p_z = 0;
+    private float p_x = 0, p_y = 0, p_z = 0, p_net = 0; //p_net is all 3 axes
+    private float grav_x = 0, grav_y = 0, grav_z = 0;
 
     File textFile = null;
 
@@ -124,6 +126,9 @@ public class DedReck extends ActionBarActivity implements SensorEventListener, L
         GYRO_ENABLED = manager.hasSystemFeature(PackageManager.FEATURE_SENSOR_GYROSCOPE);
         MAG_ENABLED = manager.hasSystemFeature(PackageManager.FEATURE_SENSOR_COMPASS);
         LOC_ENABLED = lManager.isProviderEnabled(lManager.GPS_PROVIDER);
+
+        //for dead reckoning
+        mGrav = mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
 
         if(!ACCEL_ENABLED)
         {
@@ -219,6 +224,7 @@ public class DedReck extends ActionBarActivity implements SensorEventListener, L
         guiUpdate.run();
         // register this class as a listener for the orientation and
         // accelerometer sensors
+        mSensorManager.registerListener(this, mGrav, UPDATE_RATE);
         if(ACCEL_ENABLED)
         {
             mSensorManager.registerListener(this,
@@ -315,6 +321,7 @@ public class DedReck extends ActionBarActivity implements SensorEventListener, L
             EditText pxval = (EditText)findViewById(R.id.axisxpos);
             EditText pyval = (EditText)findViewById(R.id.axisypos);
             EditText pzval = (EditText)findViewById(R.id.axiszpos);
+            EditText pval = (EditText)findViewById(R.id.axispos);
             EditText mxval = (EditText)findViewById(R.id.axisxmag);
             EditText myval = (EditText)findViewById(R.id.axisymag);
             EditText mzval = (EditText)findViewById(R.id.axiszmag);
@@ -332,6 +339,7 @@ public class DedReck extends ActionBarActivity implements SensorEventListener, L
                 pxval.setText(Float.toString(p_x));
                 pyval.setText(Float.toString(p_y));
                 pzval.setText(Float.toString(p_z));
+                pval.setText(Float.toString(p_net));
             }
             if(GYRO_ENABLED) {
 //                gxval.setText(Float.toString(g_x));
@@ -360,6 +368,11 @@ public class DedReck extends ActionBarActivity implements SensorEventListener, L
         }
 
         time_elapsed = (event.timestamp - start_time)/1000000.0;
+
+        if (event.sensor.getType() == Sensor.TYPE_GRAVITY) {
+            getGravity(event);
+            return;
+        }
 
         if(ACCEL_ENABLED)
         {
@@ -495,6 +508,14 @@ public class DedReck extends ActionBarActivity implements SensorEventListener, L
                 Uri.fromFile(file)));
     }
 
+    private void getGravity(SensorEvent event)
+    {
+        float[] values = event.values;
+        grav_x = values[0];
+        grav_y = values[1];
+        grav_z = values[2];
+    }
+
     private void getAccelerometer(SensorEvent event)
     {
         float[] values = event.values;
@@ -513,9 +534,27 @@ public class DedReck extends ActionBarActivity implements SensorEventListener, L
             a_x_data.add(0.0f);
         }
 
-        a_x = values[0]-a_x_off;
-        a_y = values[1]-a_y_off;
-        a_z = values[2]-a_z_off;
+        a_x = values[0]-grav_x;
+        a_y = values[1]-grav_y;
+        a_z = values[2]-grav_z;
+        float w = 0.05f;
+        if(a_x > -1*w && a_x < w && a_y > -1*w && a_y < w) {
+            v_x = 0;
+            v_y = 0;
+        }
+
+//        a_x = values[0]-a_x_off;
+//        a_y = values[1]-a_y_off;
+//        a_z = values[2]-a_z_off;
+        //accounting for gravity in acceleration: http://developer.android.com/reference/android/hardware/SensorEvent.html#values
+//        float alpha = 0.1f;
+//        a_x = values[0]*alpha + a_x*(1.0f-alpha);
+//        a_y = values[1]*alpha + a_y*(1.0f-alpha);
+//        a_z = values[2]*alpha + a_z*(1.0f-alpha);
+//
+//        a_x = values[0];
+//        a_y = values[1];
+//        a_z = values[2];
 
         //dead reckoning, with time in seconds
         dt = (new Double((event.timestamp - time_prev)/1000000000.0)).floatValue(); //double to float
@@ -531,21 +570,29 @@ public class DedReck extends ActionBarActivity implements SensorEventListener, L
         }
         else if (dedreck_itr == 2){ //enough readings to get velocity and position
             dedreck_itr = 3;
-            if(Math.abs(a_x - a_x_prev) > 0.1) v_x = (a_x - a_x_prev)*dt;
-            if(Math.abs(a_y - a_y_prev) > 0.1) v_y = (a_y - a_y_prev)*dt;
-            if(Math.abs(a_z - a_z_prev) > 0.1) v_z = (a_z - a_z_prev)*dt;
-            if(Math.abs(a_x - a_x_prev) > 0.1) p_x += (v_x - v_x_prev)*dt;
-            if(Math.abs(a_y - a_y_prev) > 0.1) p_y += (v_y - v_y_prev)*dt;
-            if(Math.abs(a_z - a_z_prev) > 0.1) p_z += (v_z - v_z_prev)*dt;
+            v_x = (a_x - a_x_prev)*dt;
+            v_y = (a_y - a_y_prev)*dt;
+            v_z = (a_z - a_z_prev)*dt;
+            p_x += (v_x - v_x_prev)*dt;
+            p_y += (v_y - v_y_prev)*dt;
+            p_z += (v_z - v_z_prev)*dt;
         }
         else {
-            if(Math.abs(a_x - a_x_prev) > 0.1) v_x += a_x*dt;
-            if(Math.abs(a_y - a_y_prev) > 0.1) v_y += a_y*dt;
-            if(Math.abs(a_z - a_z_prev) > 0.1) v_z += a_z*dt;
-            if(Math.abs(a_x - a_x_prev) > 0.1) p_x += v_x*dt + 0.5f*a_x*dt*dt;
-            if(Math.abs(a_y - a_y_prev) > 0.1) p_y += v_y*dt + 0.5f*a_y*dt*dt;
-            if(Math.abs(a_z - a_z_prev) > 0.1) p_z += v_z*dt + 0.5f*a_z*dt*dt;
+//            if((a_x-a_x_prev) > 0.1 || (a_x-a_x_prev) < -0.1) v_x += a_x*dt;
+//            if((a_y-a_y_prev) > 0.0 || (a_y-a_y_prev) < -0.1) v_y += a_y*dt;
+//            if((a_z-a_z_prev) > 0.0 || (a_z-a_z_prev) < -0.1) v_z += a_z*dt;
+            if(Math.abs(a_x-a_x_prev) > 0.1) v_x += a_x*dt;
+            if(Math.abs(a_y-a_y_prev) > 0.1) v_y += a_y*dt;
+            if(Math.abs(a_z-a_z_prev) > 0.1) v_z += a_z*dt;
+            p_x += v_x*dt;
+            p_y += v_y*dt;
+            p_z += v_z*dt;
+//            if(Math.abs(v_x-v_x_prev) > 0.003) p_x += v_x*dt;
+//            if(Math.abs(v_y-v_y_prev) > 0.003) p_y += v_y*dt;
+//            if(Math.abs(v_z-v_z_prev) > 0.003) p_z += v_z*dt;
         }
+
+        p_net = (float) Math.sqrt(p_x*p_x+p_y*p_y); //not accounting for z direction
 
         time_prev = event.timestamp;
         a_x_prev = a_x;
