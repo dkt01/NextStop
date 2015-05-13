@@ -1,6 +1,7 @@
 package cjmaier2_dkturne2.nextstop;
 
 import android.content.Context;
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -8,8 +9,11 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.media.MediaScannerConnection;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -18,10 +22,18 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 
 public class StopTracker extends ActionBarActivity implements LocationListener, SensorEventListener {
 
@@ -33,6 +45,7 @@ public class StopTracker extends ActionBarActivity implements LocationListener, 
     private SensorManager mSensorManager;
     private Sensor mAccel;
     private Sensor mMag;
+    private Sensor mGrav;
 
     private float[] mLastAccelerometer = new float[3];
     private float[] mLastMagnetometer = new float[3];
@@ -43,9 +56,13 @@ public class StopTracker extends ActionBarActivity implements LocationListener, 
     private float mBearing = 0f;
     private double lat = 0;
     private double lon = 0;
+    private float a_x = 0;
+    private float a_y = 0;
+    private float a_z = 0;
+    private double prev_dist = 0;
 
     private android.os.Handler guiHandler;
-    private int guiInterval = 1000; // 1000 mS
+    private int guiInterval = 500; // 500 mS
     private boolean create = true;
 
     private DataBaseHelper_Routes routesDB;
@@ -58,6 +75,29 @@ public class StopTracker extends ActionBarActivity implements LocationListener, 
     private List<RoutePath> tripCandidates;
     private List<List<String>> upcomingStopCandidates;
     private List<String> upcomingStops;
+
+    //dead reckoning variables
+    private double time_prev = 0; //used for integration
+    private float dt = 0;
+    private LinkedList<Float> a_x_data = new LinkedList<Float>();
+    private LinkedList<Float> a_y_data = new LinkedList<Float>();
+    private LinkedList<Float> a_z_data = new LinkedList<Float>();
+    private float a_x_off = 0, a_y_off = 0, a_z_off = 0; //offsets to reduce noise
+    private float a_x_prev = 0, a_y_prev = 0, a_z_prev = 0;
+    private float v_x = 0, v_y = 0, v_z = 0;
+    private float v_x_prev = 0, v_y_prev = 0, v_z_prev = 0;
+    private float p_x = 0, p_y = 0, p_z = 0, p_net = 0; //p_net is all 3 axes
+    private float grav_x = 0, grav_y = 0, grav_z = 0;
+    private int dedreck_itr = 0; //need 2 readings for velocity, 3 readings for position
+
+    private File rootdir;
+    private boolean writer_created = false; //to determine whether to write to csv
+    private BufferedWriter writer;
+    private StringBuffer csv_text;
+    private String wfilename;
+    File textFile = null;
+
+    private boolean need_loc = true;
 
 
     @Override
@@ -82,27 +122,28 @@ public class StopTracker extends ActionBarActivity implements LocationListener, 
         guiHandler = new android.os.Handler();
         lManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
-        routesDB = new DataBaseHelper_Routes(this.getApplicationContext());
-        shapesDB = new DataBaseHelper_Shapes(this.getApplicationContext());
-        stopsDB = new DataBaseHelper_Stops(this.getApplicationContext());
-        stoptimesDB = new DataBaseHelper_StopTimes(this.getApplicationContext());
-        tripsDB = new DataBaseHelper_Trips(this.getApplicationContext());
-        stoproutesDB = new DataBaseHelper_StopRoutes(this.getApplicationContext());
+        routesDB = DataBaseHelper_Routes.getInstance(this.getApplicationContext());
+        shapesDB = DataBaseHelper_Shapes.getInstance(this.getApplicationContext());
+        stopsDB = DataBaseHelper_Stops.getInstance(this.getApplicationContext());
+        stoptimesDB = DataBaseHelper_StopTimes.getInstance(this.getApplicationContext());
+        tripsDB = DataBaseHelper_Trips.getInstance(this.getApplicationContext());
+        stoproutesDB = DataBaseHelper_StopRoutes.getInstance(this.getApplicationContext());
 
         mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
         mAccel = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mMag = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+        mGrav = mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        guiUpdate.run();
 
-        mSensorManager.registerListener(this, mAccel, 50000);
-        mSensorManager.registerListener(this, mMag, 200000);
+        mSensorManager.registerListener(this, mAccel, 0);
+        mSensorManager.registerListener(this, mGrav, 0);
+        mSensorManager.registerListener(this, mMag, 100000);
 
-        lManager.requestLocationUpdates(lManager.GPS_PROVIDER, 500, 1, this);
+        lManager.requestLocationUpdates(lManager.GPS_PROVIDER, 1000, 5, this);
         Location loc = lManager.getLastKnownLocation(lManager.GPS_PROVIDER);
         if(loc != null)
         {
@@ -111,7 +152,9 @@ public class StopTracker extends ActionBarActivity implements LocationListener, 
             getCandidates(loc);
             updateUpcomingStops();
             updateCards(loc);
+            need_loc = tripCandidates.size() == 0;
         }
+        guiUpdate.run();
     }
 
     @Override
@@ -120,6 +163,12 @@ public class StopTracker extends ActionBarActivity implements LocationListener, 
         guiHandler.removeCallbacks(guiUpdate);
         lManager.removeUpdates(this);
         mSensorManager.unregisterListener(this);
+        writer_created = false;
+        try {
+            writer.close();
+        } catch (IOException ex) {
+            // Do nothing
+        }
     }
 
     @Override
@@ -148,6 +197,12 @@ public class StopTracker extends ActionBarActivity implements LocationListener, 
     public void onLocationChanged(Location location) {
         lat = location.getLatitude();
         lon = location.getLongitude();
+        if(need_loc) {
+            getCandidates(location);
+            updateUpcomingStops();
+            updateCards(location);
+            need_loc = tripCandidates.size() == 0;
+        }
     }
 
     @Override
@@ -164,10 +219,82 @@ public class StopTracker extends ActionBarActivity implements LocationListener, 
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor == mAccel) {
             System.arraycopy(event.values, 0, mLastAccelerometer, 0, event.values.length);
+            float[] values = event.values;
+
+            //keep track of first 5 accelerometer readings and average them for offset values
+            if(a_x_data.size() < 5) {
+                a_x_data.add(values[0]);
+                a_y_data.add(values[1]);
+                a_z_data.add(values[2]);
+                return;
+            }
+            else if(a_x_data.size() == 5) {
+                a_x_off = (a_x_data.get(0) + a_x_data.get(1) + a_x_data.get(2) + a_x_data.get(3) + a_x_data.get(4)) / 5.0f;
+                a_y_off = (a_y_data.get(0) + a_y_data.get(1) + a_y_data.get(2) + a_y_data.get(3) + a_y_data.get(4)) / 5.0f;
+                a_z_off = (a_z_data.get(0) + a_z_data.get(1) + a_z_data.get(2) + a_z_data.get(3) + a_z_data.get(4)) / 5.0f;
+                a_x_data.add(0.0f);
+            }
+
+            a_x = values[0]-grav_x;
+            a_y = values[1]-grav_y;
+            a_z = values[2]-grav_z;
+            float w = 0.05f;
+            if(a_x > -1*w && a_x < w && a_y > -1*w && a_y < w) {
+                v_x = 0;
+                v_y = 0;
+            }
+
+            //dead reckoning, with time in seconds
+            dt = (new Double((event.timestamp - time_prev)/1000000000.0)).floatValue(); //double to float
+
+            if (dedreck_itr == 0) {
+                dedreck_itr = 1;
+            }
+            else if (dedreck_itr == 1) { //enough readings to get velocity
+                dedreck_itr = 2;
+                v_x = (a_x - a_x_prev)*dt;
+                v_y = (a_y - a_y_prev)*dt;
+                v_z = (a_z - a_z_prev)*dt;
+                v_y = v_y < 0 ? 0 : v_y;
+            }
+            else if (dedreck_itr == 2){ //enough readings to get velocity and position
+                dedreck_itr = 3;
+                v_x = (a_x - a_x_prev)*dt;
+                v_y = (a_y - a_y_prev)*dt;
+                v_z = (a_z - a_z_prev)*dt;
+                v_y = v_y < 0 ? 0 : v_y;
+                p_x += (v_x - v_x_prev)*dt;
+                p_y += (v_y - v_y_prev)*dt;
+                p_z += (v_z - v_z_prev)*dt;
+            }
+            else {
+                if(Math.abs(a_x-a_x_prev) > 0.1) v_x += a_x*dt;
+                if(Math.abs(a_y-a_y_prev) > 0.1) v_y += a_y*dt;
+                if(Math.abs(a_z-a_z_prev) > 0.1) v_z += a_z*dt;
+                v_y = v_y < 0 ? 0 : v_y;
+                p_x += v_x*dt;
+                p_y += v_y*dt;
+                p_z += v_z*dt;
+            }
+
+            p_net = (float) Math.sqrt(p_x*p_x+p_y*p_y); //not accounting for z direction
+
+            time_prev = event.timestamp;
+            a_x_prev = a_x;
+            a_y_prev = a_y;
+            a_z_prev = a_z;
+            v_x_prev = v_x;
+            v_y_prev = v_y;
+            v_z_prev = v_z;
             mLastAccelerometerSet = true;
         } else if (event.sensor == mMag) {
             System.arraycopy(event.values, 0, mLastMagnetometer, 0, event.values.length);
             mLastMagnetometerSet = true;
+        } else if (event.sensor == mGrav) {
+            float[] values = event.values;
+            grav_x = values[0];
+            grav_y = values[1];
+            grav_z = values[2];
         }
         if (mLastAccelerometerSet && mLastMagnetometerSet) {
             SensorManager.getRotationMatrix(mR, null, mLastAccelerometer, mLastMagnetometer);
@@ -223,8 +350,83 @@ public class StopTracker extends ActionBarActivity implements LocationListener, 
         @Override
         public void run() {
             guiHandler.postDelayed(guiUpdate, guiInterval);
+            double cur_dist = p_net;
+            moveAlongPath((float)(cur_dist-prev_dist),mBearing);
+            updateDistances();
+            prev_dist = cur_dist;
+            StringBuffer csv_text = new StringBuffer();
+            String state = Environment.getExternalStorageState();
+            if(state.equals(Environment.MEDIA_MOUNTED)) {
+                File externalDir = Environment.getExternalStorageDirectory();
+                rootdir = new File(externalDir.getAbsolutePath() + "/NextStop-Tests");
+                if(!rootdir.exists())
+                {
+                    try{
+                        rootdir.mkdir();
+                    } catch(SecurityException ex){
+                        return;
+                    }
+                }
+                File dir;
+                dir = new File(rootdir.getAbsolutePath());
+//                testText.setText(externalDir.getAbsolutePath()); to show directory where file is
+                if(!dir.exists()) {
+                    try
+                    {
+                        dir.mkdir();
+                    }
+                    catch(SecurityException ex)
+                    {
+                        return;
+                    }
+                }
+
+                if(!writer_created)
+                {
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HHmmss", Locale.US);
+                    wfilename = "cjmaier2_dkturne2_nextstop_"+sdf.format(new Date())+".csv";
+                    textFile = new File(dir, wfilename);
+                    try {
+                        writer = new BufferedWriter(new FileWriter(textFile));
+                        csv_text.append("real lat,real lon,estimate lat,estimate lon\n");
+                        writer_created = true;
+                    } catch (IOException ex) {
+                        Log.w("NEXTSTOP","Error writing");
+                    }
+                }
+            } else
+                Log.w("NEXTSTOP","Error starting writer");
+            if(writer_created) {
+                Location loc;
+                try {
+                    loc = tripCandidates.get(0).getLocation();
+                } catch(Exception e) {
+                    loc = new Location("");
+                    loc.setLatitude(0);
+                    loc.setLongitude(0);
+                }
+                String newentry = Double.toString(lat) + "," + Double.toString(lon) + "," +
+                                  Double.toString(loc.getLatitude()) + "," +
+                                  Double.toString(loc.getLongitude()) + "\n";
+                csv_text.append(newentry);
+                try {
+                    writer.write(csv_text.toString());
+                    makeFileDiscoverable(textFile, getApplicationContext());
+                    csv_text.delete(0,csv_text.length()); //prevent writing same thing over and over and over and over and over and over and over
+                    // and over and over and over and over and over and over and over and over and over and
+                    // over and over and over and over and over and over and over and over and over again
+                } catch (IOException ex){
+                    Log.w("NEXTSTOP","Error writing to file");
+                }
+            }
         }
     };
+
+    public void makeFileDiscoverable(File file, Context context){
+        MediaScannerConnection.scanFile(context, new String[]{file.getPath()}, null, null);
+        context.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
+                Uri.fromFile(file)));
+    }
 
     // Returns list of route colors for a given stop
     public List<Route> getRoutesByStop(String stopID) {
@@ -250,33 +452,44 @@ public class StopTracker extends ActionBarActivity implements LocationListener, 
     }
 
     public void initialPruneCandidates(float bearing) {
-        List<Integer> deleteIndicies = new ArrayList<>();
+        List<Integer> deleteIndices = new ArrayList<>();
         for(RoutePath candidate:tripCandidates) {
             if (!candidate.bearingInMargin(bearing))
                 Log.i("NEXTSTOP", "Pruned Candidate: " + candidate.getRouteID() + " b_mine: " +
                         Float.toString(bearing) + " b_exp: " + Float.toString(candidate.getBearing()));
         }
-        if(deleteIndicies.size() > 0) {
-            Collections.sort(deleteIndicies, Collections.reverseOrder());
-            for(Integer i: deleteIndicies) {
-                tripCandidates.remove(i);
-                upcomingStopCandidates.remove(i);
+        if(deleteIndices.size() > 0) {
+            Collections.sort(deleteIndices, Collections.reverseOrder());
+            for(Integer i: deleteIndices) {
+                tripCandidates.remove(i.intValue());
+                upcomingStopCandidates.remove(i.intValue());
             }
         }
     }
 
     public void moveAlongPath(float dist, float bearing) {
         boolean changed = false;
+        List<Integer> deleteIndices = new ArrayList<>();
         for(RoutePath candidate:tripCandidates) {
             if(candidate.moveAlongPath(dist,bearing) == null) {
                 changed = true;
                 int idx = tripCandidates.indexOf(candidate);
-                upcomingStopCandidates.remove(idx);
-                tripCandidates.remove(idx);
+                deleteIndices.add(idx);
+            }
+        }
+        if(deleteIndices.size() > 0) {
+            Collections.sort(deleteIndices, Collections.reverseOrder());
+            for(Integer i: deleteIndices) {
+                Log.i("NEXTSTOP","Removed candidate "+tripCandidates.get(i).getRouteID());
+                tripCandidates.remove(i.intValue());
+                upcomingStopCandidates.remove(i.intValue());
             }
         }
         if(changed) {
             updateUpcomingStops();
+            if(tripCandidates.size() > 0)
+                updateCards(tripCandidates.get(0).getLocation());
+            updateDistances();
         }
     }
 
@@ -300,7 +513,7 @@ public class StopTracker extends ActionBarActivity implements LocationListener, 
                     if(testVal == null)
                         testVal = list.get(i);
                     else
-                        areSame = list.get(i) == testVal;
+                        areSame = list.get(i).equals(testVal);
                 }
                 if(areSame)
                     upcomingStops.add(upcomingStopCandidates.get(0).get(i));
@@ -308,6 +521,10 @@ public class StopTracker extends ActionBarActivity implements LocationListener, 
                     break;
             }
         }
+        if(upcomingStops.size() == 0)
+            Log.w("NEXTSTOP","No shared upcoming stops");
+        else
+            Log.i("NEXTSTOP", Integer.toString(upcomingStops.size()) + " shared stops");
     }
 
     public void updateCards(Location loc) {
@@ -316,22 +533,27 @@ public class StopTracker extends ActionBarActivity implements LocationListener, 
                 addStop newStop = new addStop(upcomingStops.get(i),tripCandidates.get(0));
                 newStop.execute();
             }
+        if(busStops.size() == 0 && tripCandidates.size() > 0)
+        {
+            addStop newStop = new addStop(tripCandidates.get(0).getRecentStop(),tripCandidates.get(0));
+            newStop.execute();
+        }
     }
 
     public void updateDistances() {
-        List<Integer> deleteIndicies = new ArrayList<>();
+        List<Integer> deleteIndices = new ArrayList<>();
         for(BusStopData stop:busStops) {
             int dist = (int)tripCandidates.get(0).distanceAlongRoute(stopsDB.getStopLocation(stop.stopID));
             int index = busStops.indexOf(stop);
             if(dist == -1)
-                deleteIndicies.add(index);
+                deleteIndices.add(index);
             else
                 updateDistance(index,dist);
         }
-        if(deleteIndicies.size() > 0) {
-            Collections.sort(deleteIndicies, Collections.reverseOrder());
-            for(Integer i: deleteIndicies) {
-                removeStop(i);
+        if(deleteIndices.size() > 0) {
+            Collections.sort(deleteIndices, Collections.reverseOrder());
+            for(Integer i: deleteIndices) {
+                removeStop(i.intValue());
             }
         }
     }

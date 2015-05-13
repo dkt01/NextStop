@@ -11,7 +11,7 @@ public class RoutePath {
     private List<Location> waypoints;
     private Location curPos;
     private int curPreIdx; // Stores index of waypoints before curPos
-    private final int MAXERROR = 200; // Maximum correction of dead reckoning error in meters
+    private final int MAXERROR = 250; // Maximum correction of dead reckoning error in meters
     private final float MAXBEARMARGIN = 45; // Maximum error in bearing before triggering error
     private final String tripID;
     private final String routeID;
@@ -92,7 +92,9 @@ public class RoutePath {
         double lat,lon;
         int i = curPreIdx;
         while(dist_left > 0) {
-            if(end_pos.distanceTo(waypoints.get(i+1)) <= dist) {
+            if(i == waypoints.size())
+                return null;
+            else if(end_pos.distanceTo(waypoints.get(i+1)) <= dist) {
                 dist_left -= end_pos.distanceTo(waypoints.get(i+1));
                 end_pos = waypoints.get(i + 1);
                 i++;
@@ -108,7 +110,9 @@ public class RoutePath {
                 dist_left = 0;
             }
         }
-        if(Math.abs(end_pos.bearingTo(waypoints.get(i+1)) - bearing) < 40){
+        if(i == waypoints.size())
+            return null;
+        else if(bearingInMargin(end_pos.bearingTo(waypoints.get(i+1)),bearing)) {
             curPos = end_pos;
             curPreIdx = i;
             return curPos;
@@ -117,7 +121,9 @@ public class RoutePath {
         i = curPreIdx;
         /* Try to find where turn occurred to reset the position */
         while (Math.abs(dist_left - dist) < MAXERROR) {
-            if(bearingInMargin(waypoints.get(i).bearingTo(waypoints.get(i+1)),bearing)) {
+            if(i == waypoints.size())
+                return null;
+            else if(bearingInMargin(waypoints.get(i).bearingTo(waypoints.get(i+1)),bearing)) {
                 if(i == curPreIdx) {
                     curPos = waypoints.get(i+1);
                     curPreIdx += 1;

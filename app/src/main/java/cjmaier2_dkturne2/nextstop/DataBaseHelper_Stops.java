@@ -27,11 +27,13 @@ public class DataBaseHelper_Stops extends SQLiteOpenHelper {
 
     private final Context myContext;
 
+    private static DataBaseHelper_Stops mInstance = null;
+
     /**
      * Constructor
      * Takes and keeps a reference of the passed context in order to access to the application assets and resources.
      */
-    public DataBaseHelper_Stops(Context context) {
+    private DataBaseHelper_Stops(Context context) {
 
         super(context, DB_NAME, null, 1);
         this.myContext = context;
@@ -44,6 +46,17 @@ public class DataBaseHelper_Stops extends SQLiteOpenHelper {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static DataBaseHelper_Stops getInstance(Context ctx) {
+
+        // Use the application context, which will ensure that you
+        // don't accidentally leak an Activity's context.
+        // See this article for more information: http://bit.ly/6LRzfx
+        if (mInstance == null) {
+            mInstance = new DataBaseHelper_Stops(ctx.getApplicationContext());
+        }
+        return mInstance;
     }
 
     /**
