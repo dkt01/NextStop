@@ -4,9 +4,6 @@ import android.location.Location;
 
 import java.util.List;
 
-/**
- * Created by David K Turner on 5/10/2015.
- */
 public class RoutePath {
     private List<Location> waypoints;
     private Location curPos;

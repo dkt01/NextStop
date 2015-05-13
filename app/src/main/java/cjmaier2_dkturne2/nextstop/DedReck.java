@@ -38,12 +38,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 
-//below for CSV
-
-
 public class DedReck extends ActionBarActivity implements SensorEventListener, LocationListener {
 
-    private final int capture_speed = 0;
     //0: DELAY_FASTEST
     //1: DELAY_GAME
     //3: DELAY_NORMAL
@@ -245,19 +241,6 @@ public class DedReck extends ActionBarActivity implements SensorEventListener, L
         }
         if(LOC_ENABLED)
         {
-            // This seems to cause issues since different providers have
-            // different locations at the same time.
-//            for(String provider:lProviders)
-//                lManager.requestLocationUpdates(provider,50,0,this);
-//
-//            Location loc = null;
-//
-//            for(String provider:lProviders)
-//            {
-//                loc = lManager.getLastKnownLocation(provider);
-//                if(loc != null)
-//                    break;
-//            }
             lManager.requestLocationUpdates(lManager.GPS_PROVIDER,50,10,this);
             Location loc = lManager.getLastKnownLocation(lManager.GPS_PROVIDER);
             if(loc != null)
@@ -280,7 +263,6 @@ public class DedReck extends ActionBarActivity implements SensorEventListener, L
         mSensorManager.unregisterListener(this);
         lManager.removeUpdates(this);
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -543,19 +525,6 @@ public class DedReck extends ActionBarActivity implements SensorEventListener, L
             v_y = 0;
         }
 
-//        a_x = values[0]-a_x_off;
-//        a_y = values[1]-a_y_off;
-//        a_z = values[2]-a_z_off;
-        //accounting for gravity in acceleration: http://developer.android.com/reference/android/hardware/SensorEvent.html#values
-//        float alpha = 0.1f;
-//        a_x = values[0]*alpha + a_x*(1.0f-alpha);
-//        a_y = values[1]*alpha + a_y*(1.0f-alpha);
-//        a_z = values[2]*alpha + a_z*(1.0f-alpha);
-//
-//        a_x = values[0];
-//        a_y = values[1];
-//        a_z = values[2];
-
         //dead reckoning, with time in seconds
         dt = (new Double((event.timestamp - time_prev)/1000000000.0)).floatValue(); //double to float
 
@@ -564,32 +533,26 @@ public class DedReck extends ActionBarActivity implements SensorEventListener, L
         }
         else if (dedreck_itr == 1) { //enough readings to get velocity
             dedreck_itr = 2;
-            v_x = (a_x - a_x_prev)*dt;
-            v_y = (a_y - a_y_prev)*dt;
-            v_z = (a_z - a_z_prev)*dt;
+            v_x = (a_x + a_x_prev)/2*dt;
+            v_y = (a_y + a_y_prev)/2*dt;
+            v_z = (a_z + a_z_prev)/2*dt;
         }
         else if (dedreck_itr == 2){ //enough readings to get velocity and position
             dedreck_itr = 3;
-            v_x = (a_x - a_x_prev)*dt;
-            v_y = (a_y - a_y_prev)*dt;
-            v_z = (a_z - a_z_prev)*dt;
-            p_x += (v_x - v_x_prev)*dt;
-            p_y += (v_y - v_y_prev)*dt;
-            p_z += (v_z - v_z_prev)*dt;
+            v_x = (a_x + a_x_prev)/2*dt;
+            v_y = (a_y + a_y_prev)/2*dt;
+            v_z = (a_z + a_z_prev)/2*dt;
+            p_x += (v_x + v_x_prev)/2*dt;
+            p_y += (v_y + v_y_prev)/2*dt;
+            p_z += (v_z + v_z_prev)/2*dt;
         }
         else {
-//            if((a_x-a_x_prev) > 0.1 || (a_x-a_x_prev) < -0.1) v_x += a_x*dt;
-//            if((a_y-a_y_prev) > 0.0 || (a_y-a_y_prev) < -0.1) v_y += a_y*dt;
-//            if((a_z-a_z_prev) > 0.0 || (a_z-a_z_prev) < -0.1) v_z += a_z*dt;
             if(Math.abs(a_x-a_x_prev) > 0.1) v_x += a_x*dt;
             if(Math.abs(a_y-a_y_prev) > 0.1) v_y += a_y*dt;
             if(Math.abs(a_z-a_z_prev) > 0.1) v_z += a_z*dt;
             p_x += v_x*dt;
             p_y += v_y*dt;
             p_z += v_z*dt;
-//            if(Math.abs(v_x-v_x_prev) > 0.003) p_x += v_x*dt;
-//            if(Math.abs(v_y-v_y_prev) > 0.003) p_y += v_y*dt;
-//            if(Math.abs(v_z-v_z_prev) > 0.003) p_z += v_z*dt;
         }
 
         p_net = (float) Math.sqrt(p_x*p_x+p_y*p_y); //not accounting for z direction
