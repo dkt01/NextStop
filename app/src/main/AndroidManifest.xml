@@ -50,24 +50,6 @@
                 android:value="cjmaier2_dkturne2.nextstop.MainActivity" />
         </activity>
         <activity
-            android:name=".LightTest"
-            android:label="@string/title_activity_light_test"
-            android:parentActivityName=".MainActivity"
-            android:screenOrientation="portrait" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="cjmaier2_dkturne2.nextstop.MainActivity" />
-        </activity>
-        <activity
-            android:name=".WiFiTest"
-            android:label="@string/title_activity_wifi_test"
-            android:parentActivityName=".MainActivity"
-            android:screenOrientation="portrait" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="cjmaier2_dkturne2.nextstop.MainActivity" />
-        </activity>
-        <activity
             android:name=".Logger"
             android:label="@string/title_activity_logger"
             android:parentActivityName=".MainActivity"
@@ -100,8 +82,8 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".StepCount"
-            android:label="Trajectory Calculator"
+            android:name=".StopTracker"
+            android:label="@string/title_activity_stop_tracker"
             android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait" >
             <meta-data
@@ -109,8 +91,8 @@
                 android:value="cjmaier2_dkturne2.nextstop.MainActivity" />
         </activity>
         <activity
-            android:name=".MicTest"
-            android:label="@string/title_activity_mic_test"
+            android:name=".CompassTest"
+            android:label="@string/title_activity_compass_test"
             android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait" >
             <meta-data

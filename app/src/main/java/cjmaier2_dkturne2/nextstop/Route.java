@@ -2,6 +2,11 @@ package cjmaier2_dkturne2.nextstop;
 
 /**
  * Enum of available routes and their associated colors.
+ * Color Format is #AARRGGBB where
+ *  AA is 8-bit alpha
+ *  RR is 8-bit red
+ *  GG is 8-bit green
+ *  BB is 8-bit blue
  */
 public enum Route {
     YELLOW(0xFFFFF200),

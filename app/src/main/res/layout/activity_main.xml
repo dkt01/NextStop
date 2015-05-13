@@ -77,6 +77,17 @@
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:text="Compass Test"
+                android:textSize="20sp"
+                android:textColor="#FFFFFF"
+                android:background="@drawable/buttonshape"
+                android:id="@+id/ctbutton"
+                android:onClick="launchCompTest"
+                android:layout_marginBottom="5dp" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:text="Logger"
                 android:textSize="20sp"
                 android:textColor="#FFFFFF"

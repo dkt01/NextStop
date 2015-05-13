@@ -78,6 +78,12 @@ public class MainActivity extends ActionBarActivity {
         startActivity(intent);
     }
 
+    public void launchCompTest(View view)
+    {
+        Intent intent = new Intent(this, CompassTest.class);
+        startActivity(intent);
+    }
+
     public void launchLogger(View view)
     {
         Intent intent = new Intent(this, Logger.class);
