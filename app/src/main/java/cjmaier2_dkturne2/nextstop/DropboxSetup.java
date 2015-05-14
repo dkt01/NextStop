@@ -17,8 +17,8 @@ import com.dropbox.client2.session.AppKeyPair;
 public class DropboxSetup extends ActionBarActivity {
 
     private DropboxAPI<AndroidAuthSession> mDBApi;
-    private static final String APP_KEY = "ff31c20j0ebfp8q";
-    private static final String APP_SECRET = "2yfptvmy8cppbt4";
+    private static final String APP_KEY = "";
+    private static final String APP_SECRET = "";
 
     private AppKeyPair appKeys;
     private AndroidAuthSession session;
@@ -108,7 +108,7 @@ public class DropboxSetup extends ActionBarActivity {
     public void cheatAuthentication(View view)
     {
         TextView debugText = (TextView)findViewById(R.id.message);
-        dbSettingsEditor.putString("DB_ACCESS_TOKEN","L4shDiI9TkMAAAAAAAByb7wBunQONXRfNylL3qgywb-gmF8eaXqyTp-m3uY7IWOi");
+        dbSettingsEditor.putString("DB_ACCESS_TOKEN","");
         debugText.setText("Successfully set up!");
         dbSettingsEditor.commit();
     }
