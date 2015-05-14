@@ -1,0 +1,1 @@
+You need to download the databases from https://developer.cumtd.com/gtfs/google_transit.zip as assets to the app.  dbgen.py creates a stop_routes.sqlite database that enables faster lookups in the GUI.
